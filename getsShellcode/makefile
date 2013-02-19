@@ -1,6 +1,6 @@
 #Evan Jensen
 #Make template for testing shellcode
-shellcode = r32.s
+shellcode = getsShellcode.s
 NFLAGS = elf
 CFLAGS = -m32
 

