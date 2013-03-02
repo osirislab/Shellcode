@@ -1,0 +1,11 @@
+*.o
+.*.swp
+.*.swo
+~*
+doxydoc/
+*.moc
+*.rc
+*.Debug
+*.Release
+*.pro.*
+Doxyfile
