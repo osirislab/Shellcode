@@ -32,3 +32,25 @@ def lei(*nums):
 	else:
 		return ''.join(map(lei,nums))
 
+''' 
+utilities
+'''
+def Alphabet():
+    return map (chr, [(lambda x: x+ord('a'))(x) for x in range(0,26)])
+
+def PatternString(): 
+    for x in Alphabet(): 
+        for y in Alphabet(): 
+            for z in range(0,9): 
+                yield ''.join([x.upper(), y, str(z)])
+
+def Dipstick(n): 
+    limit = 0 
+    ret = ''
+    for i in PatternString(): 
+        if limit < n: 
+            limit = limit + 1 
+            ret = ret + i 
+        else: 
+            break 
+    return ret 
