@@ -35,22 +35,38 @@ def lei(*nums):
 ''' 
 utilities
 '''
-def Alphabet():
+def chunk(iterable, chunkSize):
+    for i in range(0,len(iterable),chunkSize):
+        yield iterable[i:i+chunkSize]
+
+def alphabet():
     return map (chr, [(lambda x: x+ord('a'))(x) for x in range(0,26)])
 
-def PatternString(): 
-    for x in Alphabet(): 
-        for y in Alphabet(): 
+def patternString(): 
+    for x in alphabet(): 
+        for y in alphabet(): 
             for z in range(0,9): 
                 yield ''.join([x.upper(), y, str(z)])
 
-def Dipstick(n): 
+
+def dipstick(n): 
     limit = 0 
     ret = ''
-    for i in PatternString(): 
+    for i in patternString(): 
         if limit < n: 
             limit = limit + 1 
             ret = ret + i 
         else: 
             break 
     return ret 
+
+maxPat=''.join(patternString())
+
+def rDipstick(offset):
+#will accept an int of the form 0x12345678 or a string
+#that looks like '12345678'
+    if(type(offset)==type(999)):
+        offset=hex(offset)[2:].zfill(8)
+    findMe=reduce(lambda a,b:b+a,chunk(offset,2)).decode('hex')
+    return maxPat.index(findMe)
+
