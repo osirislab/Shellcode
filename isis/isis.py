@@ -1,5 +1,6 @@
 import re
 import socket
+import time
 from struct import pack,unpack
 
 def getSocket(chal):
@@ -7,6 +8,16 @@ def getSocket(chal):
     s.settimeout(5)
     s.connect(chal)
     return s
+
+def shell(sock):
+    command=''
+    while(command != 'exit'):
+        command=raw_input('$ ')
+        sock.send(command)
+        time.sleep(.5)
+        print sock.recv(0x10000)
+    return
+
 
 def lei(*nums):
 	if(len(nums)==1):
