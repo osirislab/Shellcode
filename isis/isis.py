@@ -3,12 +3,14 @@ import socket
 import time
 from struct import pack,unpack
 
+#chal is a 2-tuple with an address and a port  ex: ('127.0.0.1',111)
 def getSocket(chal):
     s=socket.socket()
     s.settimeout(5)
     s.connect(chal)
     return s
 
+#pass to this function a socket object with a listening shell(socket reuse)
 def shell(sock):
     command=''
     while(command != 'exit'):
@@ -18,7 +20,8 @@ def shell(sock):
         print sock.recv(0x10000)
     return
 
-
+#wrapper for pack, will guess integer size and type
+#takes a variable number of arguments
 def lei(*nums):
 	if(len(nums)==1):
 		num=nums[0]
