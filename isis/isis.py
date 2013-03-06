@@ -12,7 +12,7 @@ def getSocket(chal):
 def shell(sock):
     command=''
     while(command != 'exit'):
-        command=raw_input('$ ')
+        command=raw_input('$ ')+'\n' #raw_input won't grab a newline
         sock.send(command)
         time.sleep(.5)
         print sock.recv(0x10000)
