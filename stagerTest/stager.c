@@ -1,3 +1,9 @@
+/*
+Evan Jensen 030613
+Code to mimic the stage loader for testing
+Give it a shared library with the first 4 bytes being an offset to the entrypoint
+*/
+
 #include <unistd.h>
 #include <sys/mman.h>
 #include <stdio.h>
@@ -5,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <inttypes.h>
 
 #define STAGEADDR 0x10000000
 #define STAGELEN  0x10000
@@ -21,12 +28,16 @@ int main(int argc,char** argv){
   int fd=open(stageName, O_RDONLY);
 
   stage = mmap(STAGEADDR, STAGELEN, RWE, STAGEFLAG, fd, NULL);
+  uint32_t offset = *(uint32_t*)stage;
+
   
-  
+
   //  read(fd,stage,STAGELEN);
   
   void (*fptr)(void)=stage;
+  fptr+=offset;
   
+  printf("jmping to offset %x\n", offset);
   fptr();
   return 0;
 }
