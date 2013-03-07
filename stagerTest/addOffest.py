@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
-import sys
+from sys import argv
 from struct import pack
 
-if len(sys.argv!=4):
-    print "usage is: %s <offset> <binary> <output>" % sys.argv[0]
+if len(argv)!=4:
+    print "usage is: %s <offset> <binary> <output>" % argv[0]
     exit(1)
 
 offset,lib,output=argv[1:]
