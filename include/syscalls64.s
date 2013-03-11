@@ -9,4 +9,7 @@
 	%define __NR_open   BYTE 0x2
 	%define __NR_write  BYTE 0x1
 	%define __NR_mmap   BYTE 0x9
-	%define __NR_execve BYTE 0x59
+	%define __NR_execve BYTE 0x59 
+	%define filename   fs:0x28 ; 64 bit 
+	;%define stackcookie [gs:0x14] ; 32 bit
+
