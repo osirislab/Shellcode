@@ -7,14 +7,11 @@
 BITS 32
 	global main
 	
-	%define __NR_open   BYTE 0x5
-	%define __NR_write  BYTE 0x4
-	%define __NR_mmap   BYTE 0x90
-	%define __NR_execve BYTE 0x11
-	; %define filename   fs:0x28 ; 64 bit
-	%define stackcookie [gs:0x14] ; 32 bit
+	%include "../include/syscalls32.s"
+
 	%define openflags 0x42 ; O_CREAT|O_RDWR
 	%define size 0xffff
+
 
 	; assumption - ebx has the input (socket)
 		
