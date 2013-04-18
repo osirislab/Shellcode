@@ -1,17 +1,9 @@
-#!/usr/bin/python
+# requires pyelftools: https://pypi.python.org/pypi/pyelftools/
 
 import sys, ctypes
-from struct import *
 
 from elftools.elf.elffile import ELFFile
-from elftools.elf.descriptions import (
-    describe_ei_class, describe_ei_data, describe_ei_version,
-    describe_ei_osabi, describe_e_type, describe_e_machine,
-    describe_e_version_numeric, describe_p_type, describe_p_flags,
-    describe_sh_type, describe_sh_flags,
-    describe_symbol_type, describe_symbol_bind, describe_symbol_visibility,
-    describe_symbol_shndx, describe_reloc_type,
-    )
+from elftools.elf.descriptions import (describe_p_type, describe_p_flags)
 
 def main():
 	if(len(sys.argv)!=3):
@@ -20,14 +12,11 @@ def main():
 	
 	print "Opening ELF file: %s" % sys.argv[1] 
 	elffile = ELFFile(open(sys.argv[1],'r'))
-	header = elffile.header
-	
-	print "Entry point: 0x%x" % header['e_entry']
+	print "Entry point: 0x%x" % elffile.header['e_entry']
 		
 	loadsegments = list()
 	for segment in elffile.iter_segments():
 		segtype = describe_p_type(segment['p_type'])
-		segtype + " " + str(segment)
 		if(segtype=="LOAD"):
 			loadsegments.append(segment)
 			
@@ -50,7 +39,7 @@ def main():
 		offset = segment['p_vaddr']
 		data = segment.data()
 		for i in range(len(segment.data())):
-			pack_into('c',buf,offset+i,data[i])
+			buf[offset+i] = data[i]
 	
 	outfile = file(sys.argv[2],'w')
 	for char in buf:
