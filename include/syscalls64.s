@@ -11,5 +11,6 @@
 	%define __NR_mmap   BYTE 0x9
 	%define __NR_execve BYTE 0x59 
 	%define filename   fs:0x28 ; 64 bit 
+	%define __NR_dup2   BYTE 0x411
 	;%define stackcookie [gs:0x14] ; 32 bit
 
