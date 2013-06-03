@@ -2,7 +2,7 @@
 ;; EBX, ECX, EDX, ESI, EDI, EBP then stack
 BITS 32
 global main
-	%include "../include/syscalls32.s"
+	%include "../include/short32.s"
 
 main:
 	; execve("/bin/sh", 0, 0)
@@ -13,5 +13,5 @@ main:
 	mov ebx, esp		; arg1 = "/bin//sh\0"
 	mov ecx, eax		; arg2 = 0
 	mov edx, eax		; arg3 = 0
-	mov al, 11
+	mov al, execve
 	int 0x80
