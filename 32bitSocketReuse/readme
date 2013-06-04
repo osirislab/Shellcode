@@ -1,0 +1,3 @@
+This shellcode is usefull when you need to keep a socket alive(for whatever reason)
+makes the assumption that the exploited app does not close the socket.
+Don't forget to send the magic number defined up top.

