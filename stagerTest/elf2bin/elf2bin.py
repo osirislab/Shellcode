@@ -1,9 +1,10 @@
+#!/usr/bin/env python
 # requires pyelftools: https://pypi.python.org/pypi/pyelftools/
-
-import sys, ctypes
+import sys
+import ctypes
 
 from elftools.elf.elffile import ELFFile
-from elftools.elf.descriptions import (describe_p_type, describe_p_flags)
+from elftools.elf.descriptions import describe_p_type, describe_p_flags
 
 def main():
 	if(len(sys.argv)!=3):
