@@ -20,22 +20,20 @@ Give it a shared library with the first 4 bytes being an offset to the entrypoin
 
 int main(int argc,char** argv){
   if(argc<2){
-    perror("Need to give a stage name");
+    puts("Need to give a stage name");
     exit(1);
   }
   char* stageName=argv[1];
   void* stage;
-  int fd=open(stageName, O_RDONLY);
-
-  stage = mmap(STAGEADDR, STAGELEN, RWE, STAGEFLAG, NULL, NULL);
- 
+  int fd = open(stageName, O_RDONLY);
+  
+  stage = mmap((void*)STAGEADDR, STAGELEN, RWE, STAGEFLAG, 0, 0);
+  
   read(fd,stage,STAGELEN);
   uint32_t offset = *(uint32_t*)stage;
-
-  void (*fptr)(void)=stage;
-  fptr+=offset;
   
   printf("jmping to offset %x\n", offset);
-  fptr();
+  ((void (*)(void))stage+offset)();
+  
   return 0;
 }
