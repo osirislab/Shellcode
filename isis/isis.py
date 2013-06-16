@@ -15,7 +15,7 @@ def shell(sock):
     command=''
     while(command != 'exit'):
         command=raw_input('$ ') 
-        sock.send(command + '\n')#raw_input won't grab a newline
+        sock.send(command + '\n\0')#raw_input won't grab a newline
         time.sleep(.5)
         print sock.recv(0x10000)
     return
