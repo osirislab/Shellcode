@@ -42,12 +42,13 @@ def chunk(iterable, chunkSize):
     for i in range(0,len(iterable),chunkSize):
         yield iterable[i:i+chunkSize]
 
-def alphabet():
-    return map (chr, [(lambda x: x+ord('a'))(x) for x in range(0,26)])
+#def alphabet():
+#    return map (chr, [(lambda x: x+ord('a'))(x) for x in range(0,26)])
+    
 
 def patternString(): 
-    for x in alphabet(): 
-        for y in alphabet(): 
+    for x in list(string.ascii_lowercase): 
+        for y in list(string.ascii_lowercase): 
             for z in range(10): 
                 yield ''.join([x.upper(), y, str(z)])
 
