@@ -1,4 +1,5 @@
 import re
+import string
 import socket
 import time
 from struct import pack,unpack
