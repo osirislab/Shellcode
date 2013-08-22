@@ -48,7 +48,7 @@ def alphabet():
 def patternString(): 
     for x in alphabet(): 
         for y in alphabet(): 
-            for z in range(0,9): 
+            for z in range(10): 
                 yield ''.join([x.upper(), y, str(z)])
 
 
