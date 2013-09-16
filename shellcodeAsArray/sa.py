@@ -2,6 +2,21 @@
 
 from sys import argv
 
-shellcode=file(argv[1]).read()
-h=map(lambda a:a[2:].zfill(2),map(hex,map(ord,shellcode)))
-print r'\x'.join(h)
+def main():
+    shellcode=file(argv[1]).read()
+    binary_String = (r'\x'+
+                     r'\x'.join(map( lambda a:a.encode('hex'),
+                                     shellcode
+                                     )
+                                )
+                     )
+    print binary_String
+
+
+
+if __name__=='__main__':
+    if len(argv)<2 :
+        print "usage is %s <shellcode>" % argv[0]
+        exit(1)
+
+    main()
