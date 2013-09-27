@@ -2,6 +2,7 @@ import re
 import string
 import socket
 import time
+import telnetlib
 from struct import pack,unpack
 
 def getSocket(chal):
@@ -20,6 +21,13 @@ def shell(sock):
         time.sleep(.5)
         print sock.recv(0x10000)
     return
+
+def telnet_shell(sock):
+    '''pass to this function a socket object with a listening shell(socket reuse)'''
+    tc = telnetlib.Telnet()  
+    tc.sock = sock
+    tc.interact() 
+    return 
 
 def lei(*nums):
     '''
