@@ -2,6 +2,7 @@ import re
 import socket
 import time
 import sys
+import telnetlib
 from struct import pack,unpack
 from string import ascii_lowercase as ALPHABET
 
