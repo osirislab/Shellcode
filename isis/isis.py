@@ -166,20 +166,10 @@ def gen_pattern_string():
             for z in range(10): 
                 yield ''.join([x.upper(), y, str(z)])
 
+MAX_PAT=''.join(gen_pattern_string())
 
 def pattern_create(n): 
-    '''Generate pattern string of n patterns (3 chars) long'''
-    limit = 0 
-    ret = ''
-    for i in gen_pattern_string(): 
-        if limit < n: 
-            limit = limit + 1 
-            ret = ret + i 
-        else: 
-            break 
-    return ret[:n] 
-
-MAX_PAT=''.join(gen_pattern_string())
+    return MAX_PAT[:n]
 
 def pattern_offset(offset):
     '''
