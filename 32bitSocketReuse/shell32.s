@@ -40,7 +40,8 @@ ourread:
 	
 	;; this dup2 code attaches stdin stdout and stderr to our socket
 	;; so that we can talk to whatever program we run later
-dup2: 	
+	
+mydup2: 	
 	xor ecx,ecx 
 	mov cl, 2
 .copy:
@@ -48,7 +49,7 @@ dup2:
 	mov al,dup2	;dup2
 	int 0x80
 	dec ecx    	; this is for looping stderr/out/in
-	jns dup2.copy
+	jns mydup2.copy
 
 	;; OUR SOCKET IS IN EBX
 	
