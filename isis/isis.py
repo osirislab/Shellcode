@@ -2,15 +2,7 @@ import re
 import string
 import socket
 import time
-<<<<<<< HEAD
-<<<<<<< HEAD
 import telnetlib
-=======
-import sys
->>>>>>> ISIS-001
-=======
-import telnetlib
->>>>>>> 11c2c74ef58f57e1499977cadf772c57c85574b4
 from struct import pack,unpack
 
 def getSocket(chal):
@@ -30,21 +22,12 @@ def shell(sock):
         print sock.recv(0x10000)
     return
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 11c2c74ef58f57e1499977cadf772c57c85574b4
 def telnet_shell(sock):
     '''pass to this function a socket object with a listening shell(socket reuse)'''
     tc = telnetlib.Telnet()  
     tc.sock = sock
     tc.interact() 
     return 
-<<<<<<< HEAD
-=======
->>>>>>> ISIS-001
-=======
->>>>>>> 11c2c74ef58f57e1499977cadf772c57c85574b4
 
 def lei(*nums):
     '''
