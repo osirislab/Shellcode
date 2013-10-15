@@ -30,7 +30,7 @@ def makePicture(graph,trace):
             if(ispoi(dest,trace)):
                 edge=pydot.Edge(hex(src),hex(dest))
                 g.add_edge(edge)
-    g.write_dot("prettyPicture.dot")
+    g.write_dot("prettyPicture.{0}.dot".format(time()))
     return
 
 def ispoi(poi,trace):
@@ -39,7 +39,14 @@ def ispoi(poi,trace):
 
 def enum(root,trace):
     struct_size=0x100
-    pointers=unpack("I"*(struct_size/4),trace.readMemory(root,0x100))
+    memory=""
+    try:
+	    memory=trace.readMemory(root,struct_size)
+    except Exception, err:
+	    print "Caught exception: {0}".format(err)
+	    memory+='\0'*(struct_size-len(memory))
+	    
+    pointers=unpack("I"*(struct_size/4),memory)
     good_pointers=[i for i in pointers if ispoi(i,trace)]
     graph[root]=good_pointers
     for i in good_pointers:
@@ -52,6 +59,11 @@ def doit(eax,trace):
 	makePicture(graph,trace)
 	
 
+
+####################################################################
+#               Everything below here is broken                    #
+####################################################################
+
 class BreakOnce(vtrace.Notifier):
     def notify(self, event, trace):
         if(event==vtrace.NOTIFY_BREAK):
@@ -61,6 +73,7 @@ class BreakOnce(vtrace.Notifier):
             enum(tcb,trace)
             makePicture(graph)
         print "notify was called"
+
 
 
 def main():
