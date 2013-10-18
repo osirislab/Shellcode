@@ -1,6 +1,13 @@
 #include <stdio.h>
 #include "gs.h"
 
+
+#ifdef LIB
+extern void _start(void){
+  main();
+}
+#endif
+
 extern void print_hello(void){
   puts("hello");
   return;
@@ -13,25 +20,32 @@ extern int main(){
 }
 */
 
+void brake(void){
+  const char* b="\xcc\xc3";
+  ((void (*)(void))b)();
+  return;
+}
+
+
 extern int main(){
   
   printf("TLS : %p\n",getTLS());
   printf("libc : %p\n",getLibc());
   printf("code : %p\n",getCode());
+  printf("strings: %p\n",getStringIndex());
+
   void * pie_base=getpieload();
+  
   if(pie_base){
     printf("pie  : %p\n",getpieload());
   }
   else{
     printf("base : %p\n",gettextload());
   }
+  
+
+  brake();
+
   return 0;
 }
-/*
-extern void _start(){
-  __asm__(
-	  "int3\n"
-	  );
-  return 0;
-}
-*/
+
