@@ -45,7 +45,23 @@ def parse_prgm_hdr(data):
 		get_pgrm_hdr_entry(data,prgm_hdr_offset+8*4*i)
 	
 
+
+#section name string table offset 
+def get_symbols_offset(data):
+	e_shstrndx  ,= unpack("H",data[50:50+2])
+	e_shoff     ,= unpack("I",data[32:32+4])
+	e_shentsize ,= unpack("H",data[46:46+2])
+	
+	offset=e_shoff+e_shentsize*e_shstrndx
+	return offset
+
+
+
 if __name__=="__main__":
-	f=file(argv[1]).read()
+	f=file(argv[1]).read() 
+	#print "Program Header"
 	parse_prgm_hdr(f)
+	#print '='*80
+	#symbols_offset=get_symbols_offset(f)
+	
 	

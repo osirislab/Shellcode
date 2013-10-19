@@ -6,5 +6,7 @@ void* getLibc(void);
 void* gettextload(void);
 void* getCode(void);
 void* getpieload(void);
+void* getStringIndex(void);
+
 
 #endif

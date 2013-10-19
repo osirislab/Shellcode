@@ -1,0 +1,51 @@
+           typedef struct {
+               unsigned char e_ident[EI_NIDENT]; 0
+               uint16_t      e_type;		 16
+               uint16_t      e_machine;		 18
+               uint32_t      e_version;		 20
+               ElfN_Addr     e_entry;		 24
+               ElfN_Off      e_phoff;		 28
+               ElfN_Off      e_shoff;		 32
+               uint32_t      e_flags;		 36
+               uint16_t      e_ehsize;		 40
+               uint16_t      e_phentsize;	 42
+               uint16_t      e_phnum;		 44
+               uint16_t      e_shentsize;	 46
+               uint16_t      e_shnum;		 48
+               uint16_t      e_shstrndx;	 50
+           } ElfN_Ehdr;
+
+
+           typedef struct {
+               uint32_t   p_type;    0
+               Elf32_Off  p_offset;  4
+               Elf32_Addr p_vaddr;   8
+               Elf32_Addr p_paddr;   12
+               uint32_t   p_filesz;  16
+               uint32_t   p_memsz;   20
+               uint32_t   p_flags;   24
+               uint32_t   p_align;   28
+           } Elf32_Phdr;
+
+           typedef struct {
+               uint32_t   sh_name;	0	
+               uint32_t   sh_type;   	4
+               uint32_t   sh_flags;	8
+               Elf32_Addr sh_addr;	12
+               Elf32_Off  sh_offset;	16
+               uint32_t   sh_size;	20
+               uint32_t   sh_link;    	24
+               uint32_t   sh_info;	28
+               uint32_t   sh_addralign;	32
+               uint32_t   sh_entsize;	36
+           } Elf32_Shdr;
+
+           typedef struct {
+               uint32_t      st_name;    0
+               Elf32_Addr    st_value;	 4
+               uint32_t      st_size;	 8
+               unsigned char st_info;	 12
+               unsigned char st_other;	 13
+               uint16_t      st_shndx;	 14
+           } Elf32_Sym;
+

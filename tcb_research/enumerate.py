@@ -30,6 +30,7 @@ except:
 graph={}
 
 def makePicture(graph,trace):
+    """Takes a graph populated by enumerate and draws a picture"""
     print "makePicture"
     g=pydot.Dot()
     index=0
@@ -55,33 +56,31 @@ def makePicture(graph,trace):
     return
 
 def ispoi(poi,trace):
+    """return true if poi points to mapped memory"""
     cmd="ispoi({0})".format(poi)
     return trace.parseExpression(cmd)
 
 
 def enum(root,trace,size=None):
+    """DFS through memory seeing what can be reached from root"""
     struct_size=size
     if size==None:
-	    struct_size=STRUCT_SIZE
+        struct_size=STRUCT_SIZE
     memory=""
     try:
-	    memory=trace.readMemory(root[0],struct_size)
+        memory=trace.readMemory(root[0],struct_size)
     except Exception, err:
-	    print "Caught exception: {0}".format(err)
-	    memory+='\0'*(struct_size-len(memory))
-    
+        #it's possible we're trying to read off the endof an allocation 
+        print "Caught exception: {0}".format(err)
+        memory+='\0'*(struct_size-len(memory))
+        
     pointers=unpack("I"*(struct_size/POINTER_WIDTH),memory)
     
-    #good_pointers=[i for i in pointers if ispoi(i,trace)]
-    
-
     good_pointers=[(elem,index*POINTER_WIDTH) for elem,index in 
 		   zip(pointers,range(len(pointers))) if ispoi(elem,trace)]
     
     if(len(good_pointers)==0):
         return
-
-    #print '{0} pointers'.format(len(good_pointers))
 
     graph[root[0]]=good_pointers
     for i,offset in good_pointers:
@@ -90,44 +89,58 @@ def enum(root,trace,size=None):
     return
 
 def doit(eax,trace, size=None):
+    """wrapper for enum and makePicture, call from vdb"""
     global graph
-    graph={}
+    graph={} #this may not be the first time we run doit
     begin=time()
     if size==None:
         size=STRUCT_SIZE
     root=eax
-    root=(eax,0)
+    root=(eax,0) #For consistancy with the rest of the dataset
     enum(root, trace, size)
     makePicture(graph, trace)
-    print "finished in {0} seconds".format(time()-begin)
+    print "finished in {0} seconds".format(time() - begin)
+
 
 
 def bfs(s,e,g):
-	q=[]
-        #seen=[]
-	q.append([(s,0)])
-	while(q):
-            path=q.pop(0)
-            node=path[-1]
-            if(node[0]==e):
-                return path
-            for a in g.get(node[0],[]):
-                #if(a in seen):
-                #    continue
-                #seen.append(a)
-                new_path=list(path)
-                new_path.append(a)
-                q.append(new_path)
+    """Breadth First Search. Return all pahs from s(tart) to e(nd) in g"""
+    q=[]
+    seen=[]
+    finished_paths=[]
+    q.append([(s,0)])
+    while(q):
+        path=q.pop(0)
+        node=path[-1]
+        if(node[0]==e):
+            finished_paths.append(path)
+        for a in g.get(node[0],[]):
+            if(tuple(a) in seen):
+                continue
+            seen.append(tuple(a))
+            new_path=list(path)
+            new_path.append(a)
+            q.append(new_path)
+    return finished_paths
 
-def parse_path(path):
-    for a,o in path:
-        print hex(a),hex(o)
+def parse_paths(paths):
+    """Helper function, prints paths returned from bfs"""
+    print '{0} paths'.format(len(paths))
+    for path in paths:
+        print '='*40
+        for node in path:
+            print '{0} {1}'.format(*map(hex,node))
+
+def view_paths(start,end,graph):
+    """wrapper for bfs and parse_paths"""
+    paths=bfs(start,end,graph)
+    parse_paths(paths)
+
 
 def get_pointer(addr):
-    ptr ,= unpack("I",trace.readMemory(addr,4))
+    """returns a dword pointed to by addr"""
+    ptr ,= unpack("I",trace.readMemory(addr,POINTER_WIDTH))
     return ptr
-
-
 
 
 ####################################################################
