@@ -9,3 +9,5 @@ doxydoc/
 *.Release
 *.pro.*
 Doxyfile
+*.pyc
+*.*~
