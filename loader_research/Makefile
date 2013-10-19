@@ -1,20 +1,23 @@
-all: mapper test input other
+CFLAGS=-g -m32 -std=c99 -Wall
+
+
+all: mapper unmap test input other
 
 mapper: mapper.c
-	gcc -g -std=c99 -Wall mapper.c -o mapper
+	gcc $(CFLAGS) mapper.c -o mapper
 
 unmap: unmap.c
-	gcc -g -std=c99 -Wall unmap.c -o unmap
+	gcc $(CFLAGS) unmap.c -o unmap
 
 test: test.c
-	gcc -g -std=c99 -Wall test.c -ldl -o test
+	gcc $(CFLAGS) test.c -ldl -o test
 
 input: input.c
-	gcc -g -std=c99 -Wall -shared input.c -o input.so
+	gcc $(CFLAGS) -shared -fPIC input.c -o input.so
 
 other: other.c
-	gcc -g -std=c99 -Wall -pie -static -Wl,-Bstatic -static-libgcc other.c -o other
+	gcc $(CFLAGS) -pie -static -Wl,-Bstatic -static-libgcc other.c -o other
 
 
 clean:
-	rm mapper unmap test input.so other
+	rm -f mapper unmap test input.so other
