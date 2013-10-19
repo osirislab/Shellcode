@@ -5,7 +5,11 @@ the ISIS lab have written.
 Project assembler: NASM
 Project compiler : gcc
 
-Dependancies:
-gcc-multilib
+Dependencies:
+gcc-multilib ia32-libs vdb/vtrace
+
+
+sudo apt-get install nasm gcc gcc-multilib ia32-libs
+wget http://visi.kenshoto.com/static/releases/vivisect_20130901.zip
 
 
