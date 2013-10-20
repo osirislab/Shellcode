@@ -155,10 +155,10 @@ int main() {
             case SHT_LOUSER:
             case SHT_HIUSER: {
                 if(shdr->sh_addr == 0) continue;
-                printf("%s\tmemcpy(%x, %x, %x, %x)\n",
-                    mem + strtab->sh_offset + shdr->sh_name,
-                    (size_t)(base + shdr->sh_addr),
-                    (size_t)(mem + shdr->sh_offset),
+                printf("%s\tmemcpy(%p, %p, %x)\n",
+		       (char*)(mem + strtab->sh_offset + shdr->sh_name),
+                    (base + shdr->sh_addr),
+                    (mem + shdr->sh_offset),
                     shdr->sh_size
                 );
 
@@ -219,20 +219,20 @@ int main() {
     }
 
     printf("End!\n");
-    printf("INIT: %x\n", base + ehdr->e_entry);
+    printf("INIT: %p\n", base + ehdr->e_entry);
 
     void (*ep)() = base + 0x3d0;
     void (*init)() = base + ehdr->e_entry;
     void (*f)() = base + 0x22a86; //ehdr->e_entry + 0xbc;
 
-    //raise(SIGINT);
+    raise(SIGINT);
 
     //ep();
     printf("EP OK\n");
-    //init();
+    init();
     printf("INIT OK\n");
-    f();
-
+    //f();
+    
     printf("YAY\n");
 
     return 0;
