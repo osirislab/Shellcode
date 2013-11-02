@@ -112,12 +112,21 @@ def reverse_tcp(ip_addr, port, arch='x86'):
 
     return REVERSE_TCP_X86
 
+def is_ipv6(ip):
+    return ':' in ip
 
 def get_socket(chal):
     '''chal is a 2-tuple with an address and a port  ex: ('127.0.0.1',111)'''
-    s=socket.socket()
-    s.settimeout(5)
-    s.connect(chal)
+    #is ipv6?
+    ip,port=chal
+    if is_ipv6(ip):
+        s=socket.socket(socket.AF_INET6, socket.SOCK_STREAM, 0)
+        s.settimeout(5)
+        s.connect((ip,port,0,0))
+    else:#ipv4
+        s=socket.socket()
+        s.settimeout(5)
+        s.connect(chal)
     return s
 
 
