@@ -1,7 +1,7 @@
 	;; Evan Jensen (wont) 021813
 	;; Connect back shellcode
-	;; Handy One liner for IP by Kevin Chung
-	;; ''.join([hex(int(x))[2:].zfill(2) for x in '1.1.1.1'.split('.')[::-1]])
+	;; Handy One liner for IP
+	;; ''.join(map(chr,map(int,'1.1.1.1'.split('.')[::-1]))).encode('hex')
 	;; port is littleEndian
 %include "../include/short32.s"
 	
