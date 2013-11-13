@@ -5,6 +5,7 @@ from time import time,sleep
 import sys
 import pickle
 import collections
+import argparse
 
 
 STRUCT_SIZE=48
@@ -29,7 +30,7 @@ except:
 
 graph={}
 
-def makePicture(graph,trace):
+def makePicture(graph,trace,filename):
     """Takes a graph populated by enumerate and draws a picture"""
     print "makePicture"
     g=pydot.Dot()
@@ -43,12 +44,12 @@ def makePicture(graph,trace):
     
     now=time()
 
-    file_name="prettyPicture.{0}.dot".format(now)
+    file_name="{0}.{1}.dot".format(filename,now)
     print "writing {0}".format(file_name)
     g.write_dot(file_name)
     
     
-    pickle_file_name="prettyPicture.{0}.pickle".format(now)
+    pickle_file_name="{0}.{1}.pickle".format(filename,now)
     pickle_file=file(pickle_file_name,'w')
     print "writing {0}".format(pickle_file_name)
     pickle.dump(graph,pickle_file)
@@ -88,7 +89,7 @@ def enum(root,trace,size=None):
             enum((i,offset),trace,size)
     return
 
-def doit(eax,trace, size=None):
+def doit(trace, eax, filename, size=None):
     """wrapper for enum and makePicture, call from vdb"""
     global graph
     graph={} #this may not be the first time we run doit
@@ -98,9 +99,10 @@ def doit(eax,trace, size=None):
     root=eax
     root=(eax,0) #For consistancy with the rest of the dataset
     enum(root, trace, size)
-    makePicture(graph, trace)
+    makePicture(graph, trace,filename)
+    trace.setMeta("wont_graph",graph)
     print "finished in {0} seconds".format(time() - begin)
-
+    return
 
 
 def bfs(s,e,g):
@@ -125,17 +127,19 @@ def bfs(s,e,g):
 
 def parse_paths(paths):
     """Helper function, prints paths returned from bfs"""
-    print '{0} paths'.format(len(paths))
-    for path in paths:
+    print '{0} paths:'.format(len(paths))
+    for path,num in zip(paths,range(len(paths))):
+        print 'Path {0}'.format(num+1)
         print '='*40
         for node in path:
             print '{0} {1}'.format(*map(hex,node))
+    return
 
 def view_paths(start,end,graph):
     """wrapper for bfs and parse_paths"""
     paths=bfs(start,end,graph)
     parse_paths(paths)
-
+    return
 
 def get_pointer(addr):
     """returns a dword pointed to by addr"""
@@ -143,40 +147,60 @@ def get_pointer(addr):
     return ptr
 
 
-####################################################################
-#               Everything below here is broken                    #
-####################################################################
+def called_from_vdb(argv):
 
-class BreakOnce(vtrace.Notifier):
-    def notify(self, event, trace):
-        if(event==vtrace.NOTIFY_BREAK):
-            print "hit breakpoint"
-            #grab the value in eax it points to the tcb
-            tcb = trace.getRegister(REG_EAX)
-            enum(tcb,trace)
-            makePicture(graph)
-        print "notify was called"
+    parser = argparse.ArgumentParser(description='Look for connections in memory',
+                                     epilog="Written by wont for your pleasure.",
+                                     prog='enumerate')
 
+    parser.add_argument('--search','-s', nargs=3, metavar=('Root_Addr','Size','Output_prefix'),
+                        help='Search memory starting from root with each '
+                             '"struct" being n bytes long')                        
+
+    parser.add_argument('--path','-p', nargs=2, metavar=('Start_addr','End_Addr'),
+                        help='Find a path between the two nodes. Run after search')
 
 
-def main():
-    print '='*80
-    print "start"
-    print '='*80
-    trace=vtrace.getTrace()
-    print "got trace"
-    trace.execute("tcb")
-    print "open"
-    myNotifier = BreakOnce()
-    trace.registerNotifier(vtrace.NOTIFY_BREAK, myNotifier)
-    print "registered notifier"
-    trace.run()
-    #trace.run()
-    #trace.run()
+    #parser.add_argument('--help','-h',help='show this help message and exit')
+
+
+    if 'argv' not in dir():
+        argv=sys.argv[1:]
+    else:
+        argv=argv[1:]
+
     
-    print '='*80
-    print "end"
-    print '='*80
 
-if __name__ == "__main__":
-    main()
+    #this is a shitty hack. The argparse handler for help calls exit causing a stacktrace in vdb :(
+    if '-h' in argv or '--h' in argv or len(argv)==0: 
+        parser.print_help()
+        print 
+    else:
+        args=parser.parse_args(argv)
+
+        
+
+        if args.path<>None and args.search<>None:
+            print "Please only use one switch at a time"
+
+        elif args.path<>None:
+            #search a path based on the previous path
+            start,end = args.path
+            start,end = map(eval,[start,end])
+            if trace.hasMeta("wont_graph"):
+                graph=trace.getMeta("wont_graph")
+                view_paths(start,end,graph)
+            else:
+                print "Run search first"
+            
+        elif args.search<>None:
+            #run path traversal
+            root_addr,size,outputFile=args.search
+            root_addr,size=map(eval,(root_addr,size))
+            doit(trace, root_addr, outputFile, size)
+
+
+if 'argv' in dir():
+    called_from_vdb(argv)
+
+
