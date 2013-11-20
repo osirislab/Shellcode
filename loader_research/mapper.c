@@ -214,7 +214,7 @@ int main() {
 
     //Do some remapping
     for(size_t i = 0; i < got_sz; ++i) {
-      void** addr = base + got_plt->sh_addr + (/*3 +*/ i) * sizeof(void*);
+      void** addr = base + got_plt->sh_addr + (3 + i) * sizeof(void*);
         *addr = (size_t)(*addr)+ (size_t)base;
     }
 
@@ -223,7 +223,7 @@ int main() {
 
     void (*ep)() = base + 0x3d0;
     void (*init)() = base + ehdr->e_entry;
-    void (*f)() = base + 0x22a86; //ehdr->e_entry + 0xbc;
+    void (*f)() = base + 0x4b2; // 0x22a86; //ehdr->e_entry + 0xbc;
 
     //raise(SIGINT);
 
@@ -231,7 +231,7 @@ int main() {
     printf("EP OK\n");
     init();
     printf("INIT OK\n");
-    //f();
+    f();
     
     printf("YAY\n");
 

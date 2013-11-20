@@ -1,0 +1,13 @@
+file mapper 
+
+b 234
+commands
+b * 0x400004c4
+x/3x 0x0804aff4
+set *0x40001ff4 += 0x40000000
+set *0x40001ff8 = *0x0804aff8
+set *0x40001ffc = *0x0804affc
+x/3x 0x40001ff4
+c
+end
+r
