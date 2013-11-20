@@ -1,6 +1,10 @@
 	;; Evan Jensen
 	;; Finds base of libc
 	;; 101413
+
+	;; offsets of data structures may be off by as much as 0x30
+	;; I'm not sure what is causing the differences
+	
 	BITS 32
 
 	global getLibc
@@ -9,6 +13,8 @@
 	global getCode
 	global getpieload
 	global getStringIndex
+	global getgotone
+	global getgotzero
 	
 	%define EI_NIDENT 16
 	
@@ -61,4 +67,41 @@ getpieload:
 	mov eax,DWORD [gs:0x80]
 	mov eax,[eax+0x68]
 	mov eax,[eax+0x0]
+	ret
+
+getmain:
+	mov eax,DWORD [gs:0x80]
+	mov eax,[eax+0x4c]
+	ret
+
+getenv:
+	call getargc
+	mov edx,eax
+	call getargv
+	lea eax, [edx+eax*4+4]
+	ret
+	
+getargc:
+	mov eax,DWORD [gs:0x80]
+	mov eax,[eax+0x6c]
+	ret
+getargv:
+	mov eax,DWORD [gs:0x80]
+	add eax,eax+0x70
+	ret
+
+
+getgotone:
+	mov eax,DWORD [gs:0x80]
+	mov eax,[eax+0x68]
+	ret
+
+getgotzero:
+	mov eax,DWORD [gs:0x80]
+	mov eax,[eax+0x68]
+	ret
+
+getentry:
+	mov eax,DWORD [gs:0x80]
+	mov eax,[eax+0x28]
 	ret

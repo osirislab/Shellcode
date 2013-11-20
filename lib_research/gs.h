@@ -7,6 +7,6 @@ void* gettextload(void);
 void* getCode(void);
 void* getpieload(void);
 void* getStringIndex(void);
-
+void* getgotzero(void);
 
 #endif

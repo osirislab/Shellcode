@@ -27,13 +27,13 @@ void brake(void){
 }
 
 
-extern int main(){
+extern int main(int arc,char** argv){
   
   printf("TLS : %p\n",getTLS());
   printf("libc : %p\n",getLibc());
   printf("code : %p\n",getCode());
   printf("strings: %p\n",getStringIndex());
-
+  printf("gotone: %p\n",getgotone());
   void * pie_base=getpieload();
   
   if(pie_base){
