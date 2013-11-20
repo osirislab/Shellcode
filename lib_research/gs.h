@@ -10,5 +10,5 @@ void* getStringIndex(void);
 void* getgotzero(void);
 void* getgotone(void);
 void* getgottwo(void);
-
+void  patchmygot(void);//noreturn
 #endif

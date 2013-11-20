@@ -16,10 +16,12 @@
 	global getgotone
 	global getgotzero
 	global getgottwo
+	global patchmygot
 	
 	%define EI_NIDENT 16
 	;; 	extern .dynamic
 	extern _DYNAMIC
+	extern _GLOBAL_OFFSET_TABLE_
 	
 getStringIndex:
 	push esi
@@ -94,23 +96,36 @@ getargv:
 	ret
 
 
-getgotone:
+getgotzero:			;pointer to _dynamic
+	mov eax, _DYNAMIC
+	ret
+
+getgotone: 			;magic loader runtime struct
 	mov eax,DWORD [gs:0x80]
 	mov eax,[eax+0x68]
 	ret
-
-getgotzero:			;brittle
+	
+getgottwo:			;pointer to _dl_reuntime_resolve
 	mov eax,DWORD [gs:0x80]
 	mov eax,[eax+0x30]	;/lib/ld-linux.so.2
-	sub eax,16
+	sub eax,16		;brittle
 	ret
-	
-getgottwo:			;this modules.dynamic section
-	mov eax, _DYNAMIC
-	ret
+
 	
 getentry:
 	mov eax,DWORD [gs:0x80]
 	mov eax,[eax+0x28]
 	ret
 
+patchmygot:
+	mov edi,_GLOBAL_OFFSET_TABLE_ 
+	call getgotzero
+	mov [edi],eax	;got[0]	
+	add edi,4		
+	call getgotone
+	mov [edi],eax	;got[1]
+	add edi,4		
+	call getgottwo
+	mov [edi],eax	;got[2]
+	ret
+	
