@@ -8,5 +8,7 @@ void* getCode(void);
 void* getpieload(void);
 void* getStringIndex(void);
 void* getgotzero(void);
+void* getgotone(void);
+void* getgottwo(void);
 
 #endif

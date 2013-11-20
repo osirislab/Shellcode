@@ -15,8 +15,11 @@
 	global getStringIndex
 	global getgotone
 	global getgotzero
+	global getgottwo
 	
 	%define EI_NIDENT 16
+	;; 	extern .dynamic
+	extern _DYNAMIC
 	
 getStringIndex:
 	push esi
@@ -87,7 +90,7 @@ getargc:
 	ret
 getargv:
 	mov eax,DWORD [gs:0x80]
-	add eax,eax+0x70
+	add eax,0x70
 	ret
 
 
@@ -96,12 +99,18 @@ getgotone:
 	mov eax,[eax+0x68]
 	ret
 
-getgotzero:
+getgotzero:			;brittle
 	mov eax,DWORD [gs:0x80]
-	mov eax,[eax+0x68]
+	mov eax,[eax+0x30]	;/lib/ld-linux.so.2
+	sub eax,16
 	ret
-
+	
+getgottwo:			;this modules.dynamic section
+	mov eax, _DYNAMIC
+	ret
+	
 getentry:
 	mov eax,DWORD [gs:0x80]
 	mov eax,[eax+0x28]
 	ret
+

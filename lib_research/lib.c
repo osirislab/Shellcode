@@ -33,7 +33,10 @@ extern int main(int arc,char** argv){
   printf("libc : %p\n",getLibc());
   printf("code : %p\n",getCode());
   printf("strings: %p\n",getStringIndex());
+  printf("gotzero: %p\n",getgotzero());
   printf("gotone: %p\n",getgotone());
+  printf("gottwo: %p\n",getgottwo());
+  
   void * pie_base=getpieload();
   
   if(pie_base){
