@@ -1,0 +1,30 @@
+
+b *0x0804852e
+commands
+silent
+i r eax
+x /wx $edi
+c
+end
+
+b *0x08048538
+commands
+silent
+i r eax
+x /wx $edi
+c
+end
+
+b *0x08048542
+commands
+silent
+i r eax
+x /wx $edi
+c
+end
+
+b main
+commands
+silent
+x /3wx 0x8049ff4
+end
