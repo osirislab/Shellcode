@@ -13,7 +13,7 @@ def get_pgrm_hdr_entry(data,offset):
 		unpack("8I",data[offset:offset+8*4]))
 	type,offset,vaddr,paddr,filesz,memsz,flags,align=(
 		map(hex,(type,offset,vaddr,paddr,filesz,memsz,flags,align)))
-
+	
 	print "="*80
 	print ("type:{0} \n"
 		"offset:{1} \n"
@@ -57,11 +57,36 @@ def get_symbols_offset(data):
 
 
 
+def makerwe(data):
+	"""make all segments RWE"""
+	num_entries=get_size_prgm_hdr(data)
+	prgm_hdr_offset=get_prgm_hdr_offset(data)
+	for i in range(num_entries):
+		
+		f_offset = prgm_hdr_offset + 8*4*i
+		unpack_target=data[f_offset:f_offset+8*4]
+		print "offset{2}, len {0}:\n{1}".format(len(unpack_target),
+					     unpack_target.encode('hex'),f_offset)
+		
+		type,offset,vaddr,paddr,filesz,memsz,flags,align=(
+			unpack("8I",unpack_target))
+		new_header=pack("8I",
+			type,offset,vaddr,paddr,filesz,memsz,7,align)
+		#change the flags to be 7 "RWE"
+		data=data[:f_offset]+new_header+data[f_offset+len(new_header):]
+		print i
+	return data
+	
+
 if __name__=="__main__":
 	f=file(argv[1]).read() 
 	#print "Program Header"
 	parse_prgm_hdr(f)
+
 	#print '='*80
 	#symbols_offset=get_symbols_offset(f)
-	
-	
+	if(len(argv)>2):
+		if(argv[2]=='--rwe'):
+			new_data=makerwe(f)
+			file(argv[1]+'.rwe','w').write(new_data)
+			
