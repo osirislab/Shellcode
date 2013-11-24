@@ -65,11 +65,11 @@ void p_shdr(Elf32_Shdr* s) {
     printf("\n");
 }
 
-int main() {
+int main(int argc,char** argv) {
     int pgsz = getpagesize();
     int pgnum = USERLAND / pgsz;
-
-    int fd = open("input.so", O_RDONLY);
+    
+    int fd = open(( 1<argc ? argv[1] : "input.so"), O_RDONLY);
 
     if(fd == -1) {
         perror(NULL);
@@ -224,9 +224,11 @@ int main() {
     void (*ep)() = base + 0x3d0;
     void (*init)() = base + ehdr->e_entry;
     void (*f)() = base + 0x4b2; // 0x22a86; //ehdr->e_entry + 0xbc;
-
+    
     //raise(SIGINT);
-
+    printf("ep: %p\n",ep);
+    printf("init: %p\n",init);
+    printf("f: %p\n",f);
     //ep();
     printf("EP OK\n");
     init();
