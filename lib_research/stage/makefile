@@ -14,5 +14,9 @@ main:
 test:
 	gcc s.c -m32 -c -o stage.o -nostdlib -lc -D start -fPIE -pie
 	gcc stage.o ../gs.o -o stage -nostdlib -lc -D start -fPIE -pie
+	gcc s.c -m32 -c -o debug.o -nostdlib -lc -D start -fPIE -pie -D DEBUG
+	gcc debug.o ../gs.o -o debug_stage -nostdlib -lc -D start -fPIE -pie -D DEBUG
+
+
 clean:
 	rm -rf stage.o stage

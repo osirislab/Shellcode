@@ -11,4 +11,6 @@ void* getgotzero(void);
 void* getgotone(void);
 void* getgottwo(void);
 void  patchmygot(void);//noreturn
+void  patchmygotpie(void);//noreturn
+
 #endif

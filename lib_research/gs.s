@@ -17,6 +17,8 @@
 	global getgotzero
 	global getgottwo
 	global patchmygot
+	global patchmygotpie
+
 	
 	%define EI_NIDENT 16
 	;; 	extern .dynamic
@@ -101,6 +103,13 @@ getgotzero:			;pointer to _dynamic
 	ret
 
 getgotone: 			;magic loader runtime struct
+	;;struct link_map
+	;;{
+	;;  ElfW(Addr) l_addr	;/* Base address shared object is loaded at.  */
+	;;  char *l_name	;/* Absolute file name object was found in.  */
+	;;  ElfW(Dyn) *l_ld	;/* Dynamic section of the shared object.  */
+	;;  struct link_map *l_next, *l_prev ;/* Chain of loaded objects.  */
+	;;}				     
 	mov eax,DWORD [gs:0x80]
 	mov eax,[eax+0x68]
 	ret
@@ -128,4 +137,19 @@ patchmygot:
 	call getgottwo
 	mov [edi],eax	;got[2]
 	ret
-	
+
+patchmygotpie:
+	;; when compiled with pie, after calling a get_pc.bx function
+	;; ebx will be a pointer to the global_offset_table
+	mov edi,ebx
+	call getgotzero
+	sub eax,_GLOBAL_OFFSET_TABLE_
+	add eax,ebx
+	mov [edi],eax	;got[0]	
+	add edi,4		
+	call getgotone
+	mov [edi],eax	;got[1]
+	add edi,4		
+	call getgottwo
+	mov [edi],eax	;got[2]
+	ret
