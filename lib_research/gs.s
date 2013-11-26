@@ -18,12 +18,15 @@
 	global getgottwo
 	global patchmygot
 	global patchmygotpie
-
+	global fixdynamicpie
 	
-	%define EI_NIDENT 16
-	;; 	extern .dynamic
 	extern _DYNAMIC
 	extern _GLOBAL_OFFSET_TABLE_
+	
+	%define EI_NIDENT 16
+	%define DYNAMICPTRS 0x6a230f8
+	;; http://www.sco.com/developers/gabi/latest/ch5.dynamic.html
+	;; hex(sum(map(lambda b:1<<b,[3,4,5,6,7,12,13,17,21,23,25,26])))
 	
 getStringIndex:
 	push esi
@@ -153,3 +156,38 @@ patchmygotpie:
 	call getgottwo
 	mov [edi],eax	;got[2]
 	ret
+
+fixdynamicpie:
+	push ebp
+	push esi
+	call getgotzero		;.dynamic
+	sub eax,_GLOBAL_OFFSET_TABLE_
+	add eax,ebx
+	mov esi, eax		;esi is what will walk the dynamic section
+
+	mov ebp,ebx
+	sub ebp,_GLOBAL_OFFSET_TABLE_ ;ebp is our base load addr
+	cld
+.test:
+	lodsd
+	test eax,eax
+	jz fixdynamicpie.fin
+	mov ecx,eax
+	lodsd
+	cmp ecx,0x1f
+	ja fixdynamicpie.test	;if value of d_un>31 look at the next one
+	;; what follows is one of my favorite compiler tricks
+	mov edx,1
+	shl edx,ecx
+	and edx,DYNAMICPTRS
+	;;https://isisblogs.poly.edu/2013/05/06/oh-compiler-you-so-crazy/
+	jz .test
+	add eax, ebp
+	;; eax holds the corrected ptr value
+	mov [esi-4], eax
+	jmp .test
+.fin:
+	pop esi
+	pop ebp
+	ret
+	
