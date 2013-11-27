@@ -2,6 +2,8 @@
 #include "gs.h"
 
 
+#define BREAK() __asm__("int3")
+
 #ifdef LIB
 extern void _start(void){
   main();
@@ -12,27 +14,14 @@ extern void print_hello(void){
   puts("hello");
   return;
 }
-/*
-extern int main(){
-  static char* s="\xcc\xc3";
-  //((void (*)(void))s)();
-  return 0;
-}
-*/
-
-void brake(void){
-  const char* b="\xcc\xc3";
-  ((void (*)(void))b)();
-  return;
-}
 
 
-extern int main(int arc,char** argv){
-  
+extern int main(int arc,char** argv){  
   printf("TLS : %p\n",getTLS());
   printf("libc : %p\n",getLibc());
   printf("code : %p\n",getCode());
   printf("strings: %p\n",getStringIndex());
+  printf("ELF header: %p\n",findelfheader());
   printf("gotzero: %p\n",getgotzero());
   printf("gotone: %p\n",getgotone());
   printf("gottwo: %p\n",getgottwo());
@@ -46,8 +35,8 @@ extern int main(int arc,char** argv){
     printf("base : %p\n",gettextload());
   }
   
-
-  brake();
+  BREAK();
+  
 
   return 0;
 }

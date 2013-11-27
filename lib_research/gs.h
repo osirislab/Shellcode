@@ -10,6 +10,7 @@ void* getStringIndex(void);
 void* getgotzero(void);
 void* getgotone(void);
 void* getgottwo(void);
+void* findelfheader(void);
 void  patchmygot(void);//noreturn
 void  patchmygotpie(void);//noreturn
 void  fixdynamicpie(void);

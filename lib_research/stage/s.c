@@ -4,6 +4,8 @@
 #include <string.h>
 #include <sys/mman.h>
 
+extern _GLOBAL_OFFSET_TABLE_;
+
 #define BREAK() __asm__("int3");
 //extern _GLOBAL_OFFSET_TABLE_
 
@@ -16,13 +18,15 @@ void _start(void){
 
 int main(int argc,char** argv){
 #ifdef DEBUG
+  mprotect((void*)(_GLOBAL_OFFSET_TABLE_&(~0xfff)), 0x1000, PROT_EXEC|PROT_READ|PROT_WRITE);
   BREAK();
 #endif
   char buf[100];
   char* message="I'M THE BOSS\n";
   //BREAK();
-  //mprotect(0x8049ff4&(~0xfff), 0x1000, PROT_EXEC|PROT_READ|PROT_WRITE);
+  
   patchmygotpie();
+  fixdynamicpie();
 #ifdef DEBUG
   BREAK();
 #endif

@@ -19,12 +19,15 @@
 	global patchmygot
 	global patchmygotpie
 	global fixdynamicpie
+	global findelfheader
 	
 	extern _DYNAMIC
 	extern _GLOBAL_OFFSET_TABLE_
 	
 	%define EI_NIDENT 16
 	%define DYNAMICPTRS 0x6a230f8
+	%define ELFHEADER 0x464c457f
+	
 	;; http://www.sco.com/developers/gabi/latest/ch5.dynamic.html
 	;; hex(sum(map(lambda b:1<<b,[3,4,5,6,7,12,13,17,21,23,25,26])))
 	
@@ -178,7 +181,7 @@ fixdynamicpie:
 	ja fixdynamicpie.test	;if value of d_un>31 look at the next one
 	;; what follows is one of my favorite compiler tricks
 	mov edx,1
-	shl edx,ecx
+	shl edx,cl
 	and edx,DYNAMICPTRS
 	;;https://isisblogs.poly.edu/2013/05/06/oh-compiler-you-so-crazy/
 	jz .test
@@ -190,4 +193,14 @@ fixdynamicpie:
 	pop esi
 	pop ebp
 	ret
-	
+
+findelfheader:
+	call getCode
+.test:
+	mov ecx,[eax]
+	cmp ecx,ELFHEADER
+	jz findelfheader.fin
+	dec eax
+	jmp findelfheader.test
+.fin:
+	ret
