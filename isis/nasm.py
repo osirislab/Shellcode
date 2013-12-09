@@ -27,11 +27,13 @@ def assemble(asm, mode="elf"):
         asm = asm.read()
         os.unlink(temp.name+'.elf')
         os.unlink(linkme.name)
+        os.unlink(dir+'\\link.o')
         os.unlink(temp.name)
         return asm
     except:
         os.unlink(temp.name+'.elf')
         os.unlink(linkme.name)
+        os.unlink(dir+'\\link.o')
         os.unlink(temp.name)
         return "assembly failed"
 
