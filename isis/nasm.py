@@ -10,6 +10,10 @@ elif sys.platform.startswith('win32'):
     NASM = 'nasm/nasm.exe'
     NDISASM = 'nasm/ndisasm.exe'
 
+def delete_file(filename):
+    if os.path.exists(filename):
+        os.unlink(filename)
+
 def assemble(asm, mode="elf"):
     temp = tempfile.NamedTemporaryFile(delete=False)
 
@@ -20,21 +24,21 @@ def assemble(asm, mode="elf"):
         temp.close()
         linkme.close()
 
-        link = subprocess.check_output([NASM, '-f '+mode, temp.name, '-o '+dir+'\\link.o'])
+        link = subprocess.check_output([NASM, '-f '+mode, temp.name, '-o '+dir+'/link.o'])
         out = subprocess.check_output([NASM, temp.name, '-o '+temp.name+'.elf'])
 
         asm = open(temp.name+'.elf', 'rb')
         asm = asm.read()
-        os.unlink(temp.name+'.elf')
-        os.unlink(linkme.name)
-        os.unlink(dir+'\\link.o')
-        os.unlink(temp.name)
+        delete_file(temp.name+'.elf')
+        delete_file(linkme.name)
+        delete_file(dir+'/link.o')
+        delete_file(temp.name)
         return asm
     except:
-        os.unlink(temp.name+'.elf')
-        os.unlink(linkme.name)
-        os.unlink(dir+'\\link.o')
-        os.unlink(temp.name)
+        delete_file(temp.name+'.elf')
+        delete_file(linkme.name)
+        delete_file(dir+'/link.o')
+        delete_file(temp.name)
         return "assembly failed"
 
 
@@ -45,10 +49,10 @@ def disassemble(elf, mode=32):
         temp.close()
 
         asm = subprocess.check_output([NDISASM, '-b '+str(mode), temp.name])
-        os.unlink(temp.name)
+        delete_file(temp.name)
         return asm
     except:
-        os.unlink(temp.name)
+        delete_file(temp.name)
         return 'disassembly failed'
 
 print disassemble('\x48\x31\xc0\x50\x48\xbf\x2f\x62\x69\x6e\x2f\x2f\x73\x68\x57\xb0\x3b\x48\x89\xe7\x48\x31\xf6\x48\x31\xd2\x0f\x05', 64)
