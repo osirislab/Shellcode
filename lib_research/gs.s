@@ -20,6 +20,10 @@
 	global patchmygotpie
 	global fixdynamicpie
 	global findelfheader
+	global findgotpie
+	global findgot
+	global find_loader_by_place
+	global find_loader_by_name
 	
 	extern _DYNAMIC
 	extern _GLOBAL_OFFSET_TABLE_
@@ -103,11 +107,12 @@ getargv:
 	add eax,0x70
 	ret
 
-
+get_dynamic:	
 getgotzero:			;pointer to _dynamic
 	mov eax, _DYNAMIC
 	ret
 
+get_link_map:	
 getgotone: 			;magic loader runtime struct
 	;;struct link_map
 	;;{
@@ -120,6 +125,7 @@ getgotone: 			;magic loader runtime struct
 	mov eax,[eax+0x68]
 	ret
 	
+get_runtime_resolve:	
 getgottwo:			;pointer to _dl_reuntime_resolve
 	mov eax,DWORD [gs:0x80]
 	mov eax,[eax+0x30]	;/lib/ld-linux.so.2
@@ -171,7 +177,7 @@ fixdynamicpie:
 	mov ebp,ebx
 	sub ebp,_GLOBAL_OFFSET_TABLE_ ;ebp is our base load addr
 	cld
-.test:
+ .test:
 	lodsd
 	test eax,eax
 	jz fixdynamicpie.fin
@@ -189,18 +195,52 @@ fixdynamicpie:
 	;; eax holds the corrected ptr value
 	mov [esi-4], eax
 	jmp .test
-.fin:
+ .fin:
 	pop esi
 	pop ebp
 	ret
 
 findelfheader:
 	call getCode
-.test:
+ .test:
 	mov ecx,[eax]
 	cmp ecx,ELFHEADER
 	jz findelfheader.fin
 	dec eax
 	jmp findelfheader.test
-.fin:
+ .fin:
 	ret
+
+findgotpie:
+	call findelfheader
+	add eax, _GLOBAL_OFFSET_TABLE_
+	ret
+
+findgot:
+	mov eax, _GLOBAL_OFFSET_TABLE_
+	ret
+	
+	;; http://linuxgazette.net/85/sandeep.html
+	;; /usr/include/link.h
+	;; loader should be the last element of this list
+	%define link_map_flink 4*3
+find_loader_by_place:
+	call get_link_map
+.begin:
+	cmp [eax+link_map_flink],dword 0
+	jz  find_loader_by_place.done
+	mov eax, [eax + link_map_flink]
+	jmp find_loader_by_place.begin
+.done:	
+	mov eax, [eax]		;link_map.l_addr
+	ret
+
+	;; .*ld.*.so.*
+find_loader_by_name:
+	call get_link_map
+	;; I'm not really in the mood to implement this
+	;; do it later
+	ret
+	
+
+	

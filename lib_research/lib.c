@@ -19,6 +19,7 @@ extern void print_hello(void){
 extern int main(int arc,char** argv){  
   printf("TLS : %p\n",getTLS());
   printf("libc : %p\n",getLibc());
+  printf("ld.so : %p\n",find_loader_by_place());
   printf("code : %p\n",getCode());
   printf("strings: %p\n",getStringIndex());
   printf("ELF header: %p\n",findelfheader());
