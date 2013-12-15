@@ -24,6 +24,11 @@
 	global findgot
 	global find_loader_by_place
 	global find_loader_by_name
+	global find_symtab
+	global get_libc_start_main
+	global get_sack_begin
+	global start_main_wrapper
+	global get_stack
 	
 	extern _DYNAMIC
 	extern _GLOBAL_OFFSET_TABLE_
@@ -56,6 +61,17 @@ getStringIndex:
 	
 getTLS:
 	mov eax,DWORD [gs:0]
+	ret
+
+get_stack:
+	mov eax,DWORD [gs:0x80]
+	ret
+
+	
+get_libc_start_main:
+	mov eax,DWORD [gs:0x80]
+	mov eax,[eax+0x34]	;libc_start_main+0x9
+	sub eax,9
 	ret
 	
 getLibc:
@@ -223,6 +239,7 @@ findgot:
 	;; http://linuxgazette.net/85/sandeep.html
 	;; /usr/include/link.h
 	;; loader should be the last element of this list
+	
 	%define link_map_flink 4*3
 find_loader_by_place:
 	call get_link_map
@@ -235,12 +252,38 @@ find_loader_by_place:
 	mov eax, [eax]		;link_map.l_addr
 	ret
 
-	;; .*ld.*.so.*
-find_loader_by_name:
-	call get_link_map
-	;; I'm not really in the mood to implement this
-	;; do it later
-	ret
-	
 
 	
+%define SHT_SYMTAB 2
+%define SHT_SIZE 40
+find_symtab:
+	mov eax,[esp+4]		;base load of module
+	mov edx,[eax+32]	;e_shoff
+	add edx,eax		;addr shection headers
+	movzx ecx,word [eax+48]	;number of section headers
+.begin:
+	cmp [edx+4], dword SHT_SYMTAB ; are we there yet?
+	jz  find_symtab.done
+	add edx, SHT_SIZE
+	loop find_symtab.begin
+	;; error out
+	xor eax,eax
+	ret
+	
+.done:
+	mov eax,[edx+12]	;Elf32_Addr sh_addr
+	;; 	add eax,edx		
+	ret
+
+start_main_wrapper:
+	call get_stack
+	mov ecx,[esp+4]
+	push eax
+	push 0
+	push 0
+	push 0
+	push 0
+	push 0
+	push ecx
+	call get_libc_start_main
+	call eax

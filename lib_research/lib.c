@@ -1,6 +1,8 @@
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include "gs.h"
-
+#include <dlfcn.h>
 
 #define BREAK() __asm__("int3")
 
@@ -14,11 +16,22 @@ extern void print_hello(void){
   puts("hello");
   return;
 }
+int main2(int argc,char** argv){
+  puts("main2");
+  return 2;
+}
 
 
-extern int main(int arc,char** argv){  
+extern int main(int argc,char** argv){  
+  void* libc=getLibc();
+  void* dlsym_addr = dlsym(RTLD_DEFAULT, "dlsym");
+  int(*libc_start_main)() = get_libc_start_main();
+
+  printf("__libc_start_main(): %p\n", libc_start_main);
   printf("TLS : %p\n",getTLS());
-  printf("libc : %p\n",getLibc());
+  printf("libc : %p\n",libc);
+  printf("libc symtab: %p\n",find_symtab(libc));
+  printf("dlsym: %p\n", dlsym_addr);
   printf("ld.so : %p\n",find_loader_by_place());
   printf("code : %p\n",getCode());
   printf("strings: %p\n",getStringIndex());
@@ -36,6 +49,8 @@ extern int main(int arc,char** argv){
     printf("base : %p\n",gettextload());
   }
   
+  libc_start_main(main2,0,0,0,0,0,getTLS()); 
+
   BREAK();
   
 
