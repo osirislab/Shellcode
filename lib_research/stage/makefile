@@ -1,22 +1,12 @@
 all: test
-stage:
-	gcc s.c -m32 -c -o stage.o
-	gcc stage.o ../gs.o -o stage
 
-start:
-	gcc s.c -m32 -c -o stage.o -D start --shared -fPIC
-	gcc stage.o ../gs.o -o stage -D start --shared -fPIC
-
-main:
-	gcc s.c -m32 -c -o stage.o 
-	gcc stage.o ../gs.o -o stage -Wl, --entry=main
-
+CFLAGS= -nostdlib -lc -D start -fPIE -pie
 test:
-	gcc s.c -m32 -c -o stage.o -nostdlib -lc -D start -fPIE -pie
-	gcc stage.o ../gs.o -o stage -nostdlib -lc -D start -fPIE -pie
-	gcc s.c -m32 -c -o debug.o -nostdlib -lc -D start -fPIE -pie -D DEBUG
-	gcc debug.o ../gs.o -o debug_stage -nostdlib -lc -D start -fPIE -pie -D DEBUG
+	gcc s.c -m32 -c -o stage.o $(CFLAGS)
+	gcc stage.o ../gs.o -o stage $(CFLAGS) 
+	gcc s.c -m32 -c -o debug.o $(CFLAGS) -D start -D DEBUG
+	gcc debug.o ../gs.o -o debug_stage $(CFLAGS) -D start -D DEBUG
 
 
 clean:
-	rm -rf stage.o stage
+	rm -rf stage.o stage debug_stage

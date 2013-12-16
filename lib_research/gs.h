@@ -22,6 +22,7 @@ void* find_symtab(void* module_base);
 void  start_main_wrapper(int (*function)(void));
 void  start_main_wrapper_alt(int (*function)(void));
 void  do_patch_pie(void);
+void  patch_l_info(void);
 /*
 int (*)(int (*main_func) (int, char * *, char * *),
        int argc,

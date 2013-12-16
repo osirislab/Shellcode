@@ -1,8 +1,9 @@
 #define _GNU_SOURCE
 
 #include <stdio.h>
-#include "gs.h"
 #include <dlfcn.h>
+
+#include "gs.h"
 
 #define BREAK() __asm__("int3")
 
@@ -16,6 +17,7 @@ extern void print_hello(void){
   puts("hello");
   return;
 }
+
 int main2(){
   puts("main2");
   return 2;
