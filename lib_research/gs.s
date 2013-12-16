@@ -4,7 +4,7 @@
 
 	;; offsets of data structures may be off by as much as 0x30
 	;; I'm not sure what is causing the differences
-	
+
 	BITS 32
 
 	global getLibc
@@ -29,22 +29,31 @@
 	global get_sack_begin
 	global start_main_wrapper
 	global get_stack
+	global start_main_wrapper_alt
+	global get_base_pie
+	global do_patch_pie
+	global patch_host_dynamic_reloc
 	
 	extern _DYNAMIC
 	extern _GLOBAL_OFFSET_TABLE_
-	
+
 	%define EI_NIDENT 16
 	%define DYNAMICPTRS 0x6a230f8
 	%define ELFHEADER 0x464c457f
-	
+
 	;; http://www.sco.com/developers/gabi/latest/ch5.dynamic.html
 	;; hex(sum(map(lambda b:1<<b,[3,4,5,6,7,12,13,17,21,23,25,26])))
-	
+
+get_base_pie:
+	mov eax,ebx
+	sub eax,_GLOBAL_OFFSET_TABLE_
+	ret
+
 getStringIndex:
 	push esi
 	push edi
 	call getLibc
-	
+
 	xor edx,edx
 	xor edi,edi
 	mov di, WORD [eax + 50 ];e_shstrndx man elf line 237
@@ -57,8 +66,8 @@ getStringIndex:
 	pop edi
 	pop esi
 	ret
-	
-	
+
+
 getTLS:
 	mov eax,DWORD [gs:0]
 	ret
@@ -67,13 +76,13 @@ get_stack:
 	mov eax,DWORD [gs:0x80]
 	ret
 
-	
+
 get_libc_start_main:
 	mov eax,DWORD [gs:0x80]
 	mov eax,[eax+0x34]	;libc_start_main+0x9
 	sub eax,9
 	ret
-	
+
 getLibc:
 	mov eax,DWORD [gs:4]
 	mov eax,DWORD [eax+8]
@@ -86,7 +95,7 @@ getLibc:
 getCode:
 	pop eax
 	jmp eax
-	
+
 
 	;; not currently working
 gettextload:
@@ -113,11 +122,12 @@ getenv:
 	call getargv
 	lea eax, [edx+eax*4+4]
 	ret
-	
+
 getargc:
 	mov eax,DWORD [gs:0x80]
 	mov eax,[eax+0x6c]
 	ret
+
 getargv:
 	mov eax,DWORD [gs:0x80]
 	add eax,0x70
@@ -126,6 +136,12 @@ getargv:
 get_dynamic:	
 getgotzero:			;pointer to _dynamic
 	mov eax, _DYNAMIC
+	ret
+
+get_dynamic_pie:
+	mov eax, _DYNAMIC
+	add eax, ebx
+	sub eax, _GLOBAL_OFFSET_TABLE_
 	ret
 
 get_link_map:	
@@ -140,6 +156,21 @@ getgotone: 			;magic loader runtime struct
 	mov eax,DWORD [gs:0x80]
 	mov eax,[eax+0x68]
 	ret
+	
+patch_link_map:
+	call get_link_map
+	mov ecx,eax
+	call get_dynamic_pie
+	mov [ecx+8], eax	;link_map[0].l_ld = my_dynamic_section
+	call get_base_pie
+	;; 	mov [ecx], eax		;link_map[0].l_addr= my_base_load
+	
+	;; link_map[0].l_addr is used as an offset into the GOT
+	;; 0xb7fec2df <_dl_fixup+271>:	mov    DWORD PTR [edx+ebp*1],eax
+	;; edx == orig_got ebp=l_ld eax=function_addr from lookup
+	ret
+
+	
 	
 get_runtime_resolve:	
 getgottwo:			;pointer to _dl_reuntime_resolve
@@ -287,3 +318,50 @@ start_main_wrapper:
 	push ecx
 	call get_libc_start_main
 	call eax
+	;; no return from libc_start_main
+	
+start_main_wrapper_alt:
+	;; call libc_start_main
+	;; with most of the original arguments
+	;; this function doesn't return we can ignore calling conventions
+	mov edi,[esp+4]		;void(*)(void)
+	mov ecx,[gs:0x80]
+	lea esp,[ecx+0x4c]
+	mov [esp], edi 		;rewrite the pointer to main
+	mov eax,[esp-4]		;return addr
+	sub eax,5		;adjust for the width of the call instruction
+	jmp eax			
+	;; no return from libc_start_main
+
+do_patch_pie:
+	call patchmygotpie
+	;;call fixdynamicpie
+	call patch_host_dynamic_reloc
+	;; 	call patch_link_map ; does this even do anything?
+	ret
+
+	
+	%define RELOC 17
+patch_host_dynamic_reloc:
+	call get_link_map	; get host got
+	mov eax,[eax+8]		; eax has the got	
+.cnt:
+	cmp [eax],dword RELOC		;is this the item to patch?
+	jz patch_host_dynamic_reloc.patch ;if yes, patch
+	cmp [eax],dword 0	;hit the end of the dynamic section?
+	jnz patch_host_dynamic_reloc.not_done
+	xor eax,eax		;we hit the end without finding our item
+	ret			;error out
+.not_done:
+	add eax,8		;continue to next elem in _dynamic
+	jmp patch_host_dynamic_reloc.cnt		
+	; we have found the item to patch. Time to patch it.
+.patch:
+	mov ecx,eax
+	call get_dynamic_pie
+	mov [ecx+4], eax 	;patch it!
+	ret
+
+
+
+	

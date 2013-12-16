@@ -16,7 +16,7 @@ extern void print_hello(void){
   puts("hello");
   return;
 }
-int main2(int argc,char** argv){
+int main2(){
   puts("main2");
   return 2;
 }
@@ -48,10 +48,15 @@ extern int main(int argc,char** argv){
   else{
     printf("base : %p\n",gettextload());
   }
-  
-  libc_start_main(main2,0,0,0,0,0,getTLS()); 
+
+
 
   BREAK();
+  start_main_wrapper_alt(main2);
+  //libc_start_main(main2,0,0,0,0,0,getTLS()); 
+  //We shouldn't return here.
+
+
   
 
   return 0;
