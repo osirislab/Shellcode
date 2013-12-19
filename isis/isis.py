@@ -137,16 +137,19 @@ def shell(sock):
     listening shell(socket reuse)
     '''
     command=''
-    while(command != 'exit'):
-        command=raw_input('$ ') 
-        sock.send(command + '\n')#raw_input won't grab a newline
-        #time.sleep(.5) #bad
-        r,w,x=select.select([sock],[],[])
-        if(len(r)==0):
-            print "There was a problem with select"
-            return
-        reading_socket ,= r
-        print reading_socket.recv(0x10000)
+    prompt='$ '
+    
+    while(command != 'exit\n'):
+        r,w,x=select.select([sock,sys.stdin],[sock],[])
+        if r:
+            for reading in r:
+                if reading==sock:
+                    print reading.recv(0x10000)
+                if reading==sys.stdin:
+                    command=reading.readline()
+                    sock.send(command)
+                    
+
     return
 
 
