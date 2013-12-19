@@ -12,6 +12,7 @@ link:
 	gcc linkme.o -o testShellcode $(CFLAGS)
 
 mapper_payload: mapper_payload.s
+	nasm mapper_payload.s -o shellcode
 	nasm mapper_payload.s -o mapper_payload_test
 	cat stage >> mapper_payload_test
 

