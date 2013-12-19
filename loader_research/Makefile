@@ -1,7 +1,7 @@
 CFLAGS=-g -m32 -std=c99 -Wall
 
 
-all: mapper unmap test input other mapper_payload
+all: mapper unmap test input other mapper_payload test_shellcode
 
 mapper: mapper.c
 	gcc $(CFLAGS) mapper.c -o mapper
@@ -19,9 +19,11 @@ other: other.c
 	gcc $(CFLAGS) -pie -static -Wl,-Bstatic -static-libgcc other.c -o other
 
 mapper_payload: mapper_payload.s
-	nasm -f elf mapper_payload.s -o mapper_payload.o
-	gcc $(CFLAGS) -o mapper_payload_test mapper_payload.o
-	rm -f mapper_payload.o
+	nasm mapper_payload.s -o mapper_payload_test
+	cat stage >> mapper_payload_test
+
+test_shellcode: test_shellcode.c
+	gcc -m32 test_shellcode.c -o test_shellcode
 
 clean:
-	rm -f mapper unmap test input.so other mapper_payload_test
+	rm -f mapper unmap test input.so other mapper_payload_test test_shellcode
