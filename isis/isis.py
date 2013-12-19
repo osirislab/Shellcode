@@ -3,6 +3,7 @@ import socket
 import time
 import sys
 import telnetlib
+import select
 from struct import pack,unpack
 from string import ascii_lowercase as ALPHABET
 
@@ -139,8 +140,13 @@ def shell(sock):
     while(command != 'exit'):
         command=raw_input('$ ') 
         sock.send(command + '\n')#raw_input won't grab a newline
-        time.sleep(.5)
-        print sock.recv(0x10000)
+        #time.sleep(.5) #bad
+        r,w,x=select.select([sock],[],[])
+        if(len(r)==0):
+            print "There was a problem with select"
+            return
+        reading_socket ,= r
+        print reading_socket.recv(0x10000)
     return
 
 
