@@ -1,0 +1,4 @@
+Stage that will map elf files into memory and execute them faithfully. 
+to test:
+make
+./test.sh
