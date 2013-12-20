@@ -15,6 +15,7 @@ link:
 mapper_payload: mapper_payload.s
 	nasm mapper_payload.s -o shellcode
 	nasm mapper_payload.s -o mapper_payload_test
+	nasm mapper_payload.s -o mapper_payload_test_raw
 	cat $(STAGE_LOC)/stage >> mapper_payload_test
 
 test_shellcode: test_shellcode.c
