@@ -3,8 +3,9 @@
 shellcode = mapper_payload.s
 NFLAGS = elf
 CFLAGS = -m32 
+STAGE_LOC=../stage/
 
-all: mapper_payload test_shellcode
+all: stage mapper_payload test_shellcode 
 assemble:
 	nasm -f $(NFLAGS) $(shellcode) -o linkme.o
 	nasm $(shellcode) -o shellcode
@@ -14,15 +15,15 @@ link:
 mapper_payload: mapper_payload.s
 	nasm mapper_payload.s -o shellcode
 	nasm mapper_payload.s -o mapper_payload_test
-	cat stage >> mapper_payload_test
+	cat $(STAGE_LOC)/stage >> mapper_payload_test
 
 test_shellcode: test_shellcode.c
 	gcc -m32 test_shellcode.c -o test_shellcode
 
-
-
+stage:
+	cd $(STAGE_LOC) && $(MAKE)
 
 clean:
-	rm linkme.o
-	rm testShellcode
-	rm shellcode
+	rm -f linkme.o testShellcode shellcode
+
+
