@@ -18,7 +18,7 @@ compile:   assemble $(TARGET)
 
 debug_compile: assemble $(TARGET) 
 	gcc $(TARGET) -c -o debug.o $(DEBUG_FLAGS)
-	gcc debug.o gs.o -o debug_stage 
+	gcc debug.o gs.o -o debug_stage $(DEBUG_FLAGS)
 
 clean:
 	rm -f stage.o debug.o stage debug_stage gs.o
