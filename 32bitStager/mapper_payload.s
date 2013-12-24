@@ -151,3 +151,4 @@ got_plt_end:
 ENDOFCODE:
  	call  have_elf
 	;; append elf here
+incbin "stage"
