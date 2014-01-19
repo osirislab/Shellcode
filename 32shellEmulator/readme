@@ -1,0 +1,2 @@
+32bit shell emulating payload will close gracefully when assembled with -D PLAYFAIR (Check makefile)
+If playfair is not defined, the payload will forkbomb when the socket is disconnected
