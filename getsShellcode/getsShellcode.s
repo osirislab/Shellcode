@@ -2,7 +2,7 @@
 	;; Evan Jensen (wont) 111012
 BITS 32
 	
-%include "../include/short32.s"
+%include "short32.s"
 	global main
 
 main:

