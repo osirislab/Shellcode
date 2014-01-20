@@ -1,4 +1,4 @@
-	;; Evan Jensen 32bit socket reuse shellcode
+	;; Evan Jensen 32bit shell emulating shellcode
 	;; 
 
 	%include "short32.s"
