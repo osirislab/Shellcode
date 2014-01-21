@@ -1,17 +1,23 @@
 #Evan Jensen
 #Make template for testing shellcode
+
+RUNTIMEDIR = ../include/runtime/
+INCLUDEDIR = ../include/
+INCLUDE    = -I $(INCLUDEDIR) -I $(RUNTIMEDIR)
+
+
 shellcode = shell64.s
+SFLAGS     = -D SYSCALL 
 NFLAGS = elf64
-CFLAGS = 
+CFLAGS = -m64
 
 all: assemble link
-assemble:
-	nasm -f $(NFLAGS) $(shellcode) -o linkme.o
-	nasm $(shellcode) -o shellcode
-link:
+assemble: $(shellcode)
+	nasm -f $(NFLAGS) $(shellcode) $(INCLUDE) $(SFLAGS) -o linkme.o
+	nasm $(shellcode) $(INCLUDE) $(SFLAGS) -o shellcode
+link:	
 	gcc linkme.o -o testShellcode $(CFLAGS)
 
 clean:
-	rm linkme.o
-	rm testShellcode
-	rm shellcode
+	rm -f linkme.o testShellcode shellcode
+
