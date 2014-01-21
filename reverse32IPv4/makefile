@@ -5,14 +5,16 @@ RUNTIMEDIR = ../include/runtime/
 INCLUDEDIR = ../include/
 INCLUDE    = -I $(INCLUDEDIR) -I $(RUNTIMEDIR)
 
-shellcode = r32.s
-NFLAGS = elf
+shellcode  = r32.s
+NFLAGS     = -f elf
+SFLAGS     = -D INT80
+
 CFLAGS = -m32
 
 all: assemble link
 assemble:
-	nasm -f $(NFLAGS) $(shellcode) $(INCLUDE)  -o linkme.o
-	nasm $(shellcode) $(INCLUDE) -o shellcode
+	nasm $(NFLAGS) $(shellcode) $(INCLUDE) $(SFLAGS) -o linkme.o
+	nasm $(shellcode) $(INCLUDE) $(SFLAGS) -o shellcode
 link:
 	gcc linkme.o -o testShellcode $(CFLAGS)
 
