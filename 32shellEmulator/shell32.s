@@ -7,8 +7,25 @@
 
 	global main
 
-main:	
+main:
+
+do_fork:
+	
+	SYSTEM_CALL(fork)
+	test eax,eax
+	jz short child
+parent:
+	push byte 0
+	push byte 0
+	push byte 0
+	pop ebx
+	pop ecx
+	pop edx	
+	SYSTEM_CALL(waitpid)
+	jmp short do_fork
+child:
 	cld
+	
 get_input:
 	xor eax,eax
 	cdq
@@ -16,40 +33,24 @@ get_input:
 	sub esp,edx
 	mov ecx,esp
 	xor ebx,ebx
-	push byte read
-	pop eax
-	SYSTEM_CALL
+	SYSTEM_CALL(read)
 	mov ebp,eax
 	test eax,eax
-	jz do_exit ;synchronous IO or GTFO
+	jz short do_exit ;synchronous IO or GTFO
 	mov byte [eax+esp-1],0
-	push eax
+
+
+	;; push eax ;return of read pushed by get_input
+	;; pop ecx
 	
-	
-do_fork:
-	
-	push byte fork
-	pop eax
-	SYSTEM_CALL
-	test eax,eax
-	jz child
-parent:
-	push waitpid
-	pop eax
-	xor ebx,ebx
-	mov ecx,ebx
-	mov edx,ebx
-	SYSTEM_CALL
-	jmp get_input
-	
-child:
-	;; let's parse the arguments here
-	pop ecx			;return of read pushed by get_input
+	;let's parse the arguments here
+	xchg eax,ecx
 	push byte " "		
 	pop eax			;space used for inlined strchr
 	mov ebx,esp
-	xor edx,edx
-	add esp,BUFFERLEN
+	cdq			;msb of eax is zero so this is ok
+	
+	add esp,BUFFERLEN	;space for argv[]
 add_token: 	;; calculate the pointerp to push
 	
 	mov esi,ebp
@@ -57,36 +58,26 @@ add_token: 	;; calculate the pointerp to push
  	
 	lea edi,[ebx + esi] ;register subtraction no good in lea
 	mov [esp+edx*4], edi ;save the current token
-	inc edx
+	inc edx		     ;increment argv[] index
 	
-	
-	repne scasb
+	repne scasb		;find the next space
 	
 	mov esi,ebp
 	sub esi,ecx
-	mov byte[ebx+esi-1],0
+	mov byte[ebx+esi-1],0	;replace the space with null byte (strtok)
 	
-	test ecx,ecx
-	jz exec
-	
-	jmp short add_token
+	test ecx,ecx		;if ECX is zero we've hit the end of the input str
+	jz short exec		;set up for execve systemcall (with argv =D)
+	jmp short add_token	;if not, strtok
 	
 exec:
-	
-	
-	xor eax,eax
+	xchg ecx,eax		;eax=0
 	mov [esp+edx*4],eax
 	cdq
-	push eax
-	mov al,11
-	lea ecx,[esp+4]
-	
-	xor edx,edx
-	
+	mov al,execve
+	lea ecx,[esp]
 	SYSTEM_CALL
 	
 do_exit:;; exit nicely if anything fails
-	push byte exit
-	pop eax
 	xor ebx,ebx ;optional
-	SYSTEM_CALL
+	SYSTEM_CALL(exit)
