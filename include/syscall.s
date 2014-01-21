@@ -24,17 +24,19 @@
 	SYSTEM_CALL
 	
 	%elifdef SYSENTER
+	int3
+	hlt
+	
+	%elifdef SYSCALL
 	push byte %1
 	pop rax			;used most frequently with 64bit shellcode
 	SYSTEM_CALL
 	
-	%elifdef SYSCALL
-	int3
-	hlt
 	%elifdef CALLGATE32	;32bit only
 	xor eax,eax
 	mov al, %1
-	SYSTEM_CALL 
+	SYSTEM_CALL
+	
 	%else
 	hlt	
 	%endif
