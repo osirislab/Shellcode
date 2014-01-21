@@ -18,23 +18,25 @@
 
 %macro SYSTEM_CALL 1
 	
-	%ifdef INT80
-	xor eax,eax;used most frequently with 32bit shellcode
-	mov al, %1
+	%ifdef INT80 ;used most frequently with 32bit shellcode
+	push byte %1
+	pop eax
+	;; xor eax,eax
+	;; mov al,%1
 	SYSTEM_CALL
 	
 	%elifdef SYSENTER
 	int3
 	hlt
 	
-	%elifdef SYSCALL
+	%elifdef SYSCALL ;used most frequently with 64bit shellcode
 	push byte %1
-	pop rax			;used most frequently with 64bit shellcode
+	pop rax			
 	SYSTEM_CALL
 	
 	%elifdef CALLGATE32	;32bit only
-	xor eax,eax
-	mov al, %1
+	push byte %1
+	pop eax
 	SYSTEM_CALL
 	
 	%else
