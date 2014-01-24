@@ -15,10 +15,7 @@ hex_bytes=[i.encode('hex').zfill(2) for i in shellcode]
 
 print 'shellcode = (',
 for i in chunk(hex_bytes, LINE_LEN):
-    print '"',
-    print r'\x'+r'\x'.join(i),
-    print '"'
-
+    print '"{}"'.format( r'\x'+r'\x'.join(i))    
 print ')'
 
 
