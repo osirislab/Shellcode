@@ -7,13 +7,12 @@ INCLUDE    = -I $(INCLUDEDIR) -I $(RUNTIMEDIR)
 shellcode  = shell32.s
 NFLAGS     = -f elf -D ELF
 CFLAGS     = -m32 
-SHELL_TYPE = -D EMULATOR
 
 
 all: assemble link
 assemble:
-	nasm $(NFLAGS) $(shellcode) $(INCLUDE) $(SHELL_TYPE) -o linkme.o
-	nasm $(shellcode) $(INCLUDE) $(SHELL_TYPE) -o shellcode
+	nasm $(NFLAGS) $(shellcode) $(INCLUDE)  -o linkme.o
+	nasm $(shellcode) $(INCLUDE)  -o shellcode
 link:
 	gcc linkme.o -o testShellcode $(CFLAGS)
 

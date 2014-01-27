@@ -55,7 +55,7 @@ mydup2:
 
 
 	;; local shellcode
-
+%define EMULATOR
 %ifdef 	EMULATOR
 	;; shell emulating shellcode
 	incbin "../32shellEmulator/shellcode"
