@@ -155,20 +155,32 @@ def shell(sock):
 
 def lei(*nums):
     '''
-    wrapper for struct.pack(), will guess integer size and type
+    wrapper for struct.pack("I/i"), will identify signdness and
     takes a variable number of arguments
     '''
     if(len(nums)==1):
         num=nums[0]
         if(num>0):
-            if(num<0xffffffff):
-                return pack("<I",num) # little-endian, unsigned int
-            else:
-                return pack("<Q",num) # little-endian, unsigned long long
+            return pack("<I",num) # little-endian, unsigned int
         else:
             return pack("<i",num) # little-endian int
     else:
         return ''.join(map(lei,nums))
+
+
+def lei64(*nums):
+    '''
+    wrapper for struct.pack("Q/q"), will identify signdness and
+    takes a variable number of arguments
+    '''
+    if(len(nums)==1):
+        num=nums[0]
+        if(num>0):
+            return pack("<Q",num) # little-endian, unsigned int
+        else:
+            return pack("<q",num) # little-endian int
+    else:
+        return ''.join(map(lei64,nums))
 
 
 def chunk(iterable, chunk_size):
