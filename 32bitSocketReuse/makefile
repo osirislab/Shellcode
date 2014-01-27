@@ -4,14 +4,16 @@
 RUNTIMEDIR = ../include/runtime/
 INCLUDEDIR = ../include/
 INCLUDE    = -I $(INCLUDEDIR) -I $(RUNTIMEDIR)
-shellcode = shell32.s
-NFLAGS = elf
-CFLAGS = -m32 
+shellcode  = shell32.s
+NFLAGS     = -f elf -D ELF
+CFLAGS     = -m32 
+SHELL_TYPE = -D EMULATOR
+
 
 all: assemble link
 assemble:
-	nasm -f $(NFLAGS) $(shellcode) $(INCLUDE) -o linkme.o
-	nasm $(shellcode) $(INCLUDE) -o shellcode
+	nasm $(NFLAGS) $(shellcode) $(INCLUDE) $(SHELL_TYPE) -o linkme.o
+	nasm $(shellcode) $(INCLUDE) $(SHELL_TYPE) -o shellcode
 link:
 	gcc linkme.o -o testShellcode $(CFLAGS)
 

