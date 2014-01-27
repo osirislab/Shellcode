@@ -58,6 +58,6 @@ copy:
 	incbin "../32shellEmulator/shellcode"
 %else
 	;; ordinary shellcode (/bin/sh)
-	incbin "../32shellEmulator/shellcode"
+	incbin "../32bitLocalBinSh/shellcode"
 %endif
  

