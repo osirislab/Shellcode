@@ -4,6 +4,7 @@ import time
 import sys
 import telnetlib
 import select
+import string
 from struct import pack,unpack
 from string import ascii_lowercase as ALPHABET
 
@@ -182,26 +183,31 @@ def lei64(*nums):
     else:
         return ''.join(map(lei64,nums))
 
-def dlei(nums):
+def ulei(nums):
 	'''unpacks arbitray amount of 32bit packed values returns list'''
-	lis = []
-	unList = re.findall('....',nums)
+	lis, unList = [], []
+	for i in chunk(nums,4):
+		#right justified due to bit read order adjust as necessary
+		i = i.rjust(4,'0')
+		unList.append(i)
 	while len(unList) != 0:
 		struc = unpack("<I", unList[0])
 		lis.append(struc[0])
 		del unList[0]
 	return lis
 
-def dlei64(nums):
+def ulei64(nums):
 	'''unpack arbitrary amount of 64 bit packed values'''
-	lis = []
-	unList = re.findall('........',nums)
+	lis,unList = [],[]
+	for i in chunk(nums, 8):
+		#Right justified due to bit read order adjust as necessary
+		i = i.rjust(8,'0')
+		unList.append(i)
 	while len(unList)!=0:
 		struc = unpack("<Q", unList[0])
 		lis.append(struc[0])
 		del unList[0]
 	return lis
-
 
 def chunk(iterable, chunk_size):
     '''Divide iterable into chunks of chunk_size'''
