@@ -182,6 +182,26 @@ def lei64(*nums):
     else:
         return ''.join(map(lei64,nums))
 
+def dlei(nums):
+	'''unpacks arbitray amount of 32bit packed values returns list'''
+	lis = []
+	unList = re.findall('....',nums)
+	while len(unList) != 0:
+		struc = unpack("<I", unList[0])
+		lis.append(struc[0])
+		del unList[0]
+	return lis
+
+def dlei64(nums):
+	'''unpack arbitrary amount of 64 bit packed values'''
+	lis = []
+	unList = re.findall('........',nums)
+	while len(unList)!=0:
+		struc = unpack("<Q", unList[0])
+		lis.append(struc[0])
+		del unList[0]
+	return lis
+
 
 def chunk(iterable, chunk_size):
     '''Divide iterable into chunks of chunk_size'''
@@ -243,4 +263,12 @@ def telnet_shell(sock):
     tc = telnetlib.Telnet()  
     tc.sock = sock
     tc.interact() 
-    return 
+    return
+
+def recv_until(s, data):
+	'''receive data from s until string data is found s(socket, "string")'''
+	p = ""
+	while data not in p:
+		p += s.recv(0x1)
+	return p
+
