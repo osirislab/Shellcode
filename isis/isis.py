@@ -278,3 +278,23 @@ def recv_until(s, data):
 		p += s.recv(0x1)
 	return p
 
+def hd(s,n,le=True):
+    """print out a hex dump of the string s in n byte chunks little-endian by default"""
+    elems=chunk(s,n)
+    fmt_mapping={1:'B', 2:'H', 4:'I', 8:'Q'}
+    
+    fmt=('<' if le else '>') + fmt_mapping[n] 
+
+    elems=map(lambda a:unpack(fmt,'\0'*(n-len(a))+a)[0],elems)
+    
+    addr=0
+
+    for line in chunk(elems,0x10/n):
+        #addr, [elems..]
+        fmt_str='{:#08x}:' + (' {{:#0{pad}x}}'.format(pad=(n*2+2)))*len(line)
+        print fmt_str.format(addr,*line)
+        addr+=0x10
+
+
+
+
