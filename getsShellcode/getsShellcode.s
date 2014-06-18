@@ -4,6 +4,7 @@ BITS 32
 	
 %include "short32.s"
 %include "syscall.s"
+%include "util.s"
 	global main
 
 main:
@@ -13,8 +14,7 @@ _close:
 	SYSTEM_CALL(close) 	;close(STDIN_FILENO)
 tty:
 	push ebx
-	push 0x7974742f
-	push 0x7665642f
+	PUSH_STRING "/dev/tty"
 	mov ebx,esp 		;/dev/tty
 	xor ecx,ecx
 	mov cl,2		;O_RDRW
