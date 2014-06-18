@@ -12,7 +12,7 @@ main:
 get_input:
 	xor eax,eax
 	cdq
-	mov dx,BUFFERLEN
+	mov dx, BUFFERLEN
 	mov ecx,esp
 	xor ebx,ebx
 	SYSTEM_CALL(read)
@@ -52,9 +52,10 @@ parse:
 	push byte " "		
 	pop eax			;space used for inlined strchr
 	mov ebx,esp
+	sub esp,edx		;space for argv[]
 	cdq			;msb of eax is zero so this is ok
 	
-	sub esp,BUFFERLEN	;space for argv[]
+	
 add_token: 	;; calculate the pointerp to push
 	
 	mov esi,ebp
