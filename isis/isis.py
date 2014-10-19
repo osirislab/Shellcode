@@ -120,13 +120,13 @@ def is_ipv6(ip):
 def get_socket(chal):
     '''chal is a 2-tuple with an address and a port  ex: ('127.0.0.1',111)'''
     #is ipv6?
-    ip,port=chal
+    ip, port = chal
     if is_ipv6(ip):
-        s=socket.socket(socket.AF_INET6, socket.SOCK_STREAM, 0)
+        s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM, 0)
         s.settimeout(5)
-        s.connect((ip,port,0,0))
+        s.connect((ip, port, 0, 0))
     else:#ipv4
-        s=socket.socket()
+        s = socket.socket()
         s.settimeout(5)
         s.connect(chal)
     return s
@@ -137,20 +137,18 @@ def shell(sock):
     pass to this function a socket object with a 
     listening shell(socket reuse)
     '''
-    command=''
-    prompt='$ '
+    command = ''
+    prompt = '$ '
     
-    while(command != 'exit\n'):
-        r,w,x=select.select([sock,sys.stdin],[sock],[])
+    while command != 'exit\n':
+        r,w,x = select.select([sock,sys.stdin], [sock], [])
         if r:
             for reading in r:
-                if reading==sock:
+                if reading == sock:
                     print reading.recv(0x10000)
-                if reading==sys.stdin:
-                    command=reading.readline()
+                if reading == sys.stdin:
+                    command = reading.readline()
                     sock.send(command)
-                    
-
     return
 
 
@@ -159,14 +157,14 @@ def lei(*nums):
     wrapper for struct.pack("I/i"), will identify signdness and
     takes a variable number of arguments
     '''
-    if(len(nums)==1):
-        num=nums[0]
-        if(num>0):
-            return pack("<I",num) # little-endian, unsigned int
+    if len(nums) == 1:
+        num = nums[0]
+        if num > 0:
+            return pack("<I", num) # little-endian, unsigned int
         else:
-            return pack("<i",num) # little-endian int
+            return pack("<i", num) # little-endian int
     else:
-        return ''.join(map(lei,nums))
+        return ''.join(map(lei, nums))
 
 
 def lei64(*nums):
@@ -174,40 +172,40 @@ def lei64(*nums):
     wrapper for struct.pack("Q/q"), will identify signdness and
     takes a variable number of arguments
     '''
-    if(len(nums)==1):
-        num=nums[0]
-        if(num>0):
-            return pack("<Q",num) # little-endian, unsigned int
+    if len(nums) == 1:
+        num = nums[0]
+        if num > 0 :
+            return pack("<Q", num) # little-endian, unsigned int
         else:
-            return pack("<q",num) # little-endian int
+            return pack("<q", num) # little-endian int
     else:
-        return ''.join(map(lei64,nums))
+        return ''.join(map(lei64, nums))
 
 def ulei(nums):
-	'''unpacks arbitray amount of 32bit packed values returns list'''
-	lis, unList = [], []
-	for i in chunk(nums,4):
-		#right justified due to bit read order adjust as necessary
-		i = i.rjust(4,'0')
-		unList.append(i)
-	while len(unList) != 0:
-		struc = unpack("<I", unList[0])
-		lis.append(struc[0])
-		del unList[0]
-	return lis
+    '''unpacks arbitray amount of 32bit packed values returns list'''
+    lis, unList = [], []
+    for i in chunk(nums, 4):
+        #right justified due to bit read order adjust as necessary
+        i = i.rjust(4, '0')
+        unList.append(i)
+    while len(unList) != 0:
+        struc = unpack("<I", unList[0])
+        lis.append(struc[0])
+        del unList[0]
+    return lis
 
 def ulei64(nums):
-	'''unpack arbitrary amount of 64 bit packed values'''
-	lis,unList = [],[]
-	for i in chunk(nums, 8):
-		#Right justified due to bit read order adjust as necessary
-		i = i.rjust(8,'0')
-		unList.append(i)
-	while len(unList)!=0:
-		struc = unpack("<Q", unList[0])
-		lis.append(struc[0])
-		del unList[0]
-	return lis
+    '''unpack arbitrary amount of 64 bit packed values'''
+    lis,unList = [], []
+    for i in chunk(nums, 8):
+        #Right justified due to bit read order adjust as necessary
+        i = i.rjust(8, '0')
+        unList.append(i)
+    while len(unList) != 0:
+        struc = unpack("<Q", unList[0])
+        lis.append(struc[0])
+        del unList[0]
+    return lis
 
 def chunk(iterable, chunk_size):
     '''Divide iterable into chunks of chunk_size'''
@@ -222,7 +220,7 @@ def gen_pattern_string():
             for z in range(10): 
                 yield ''.join([x.upper(), y, str(z)])
 
-MAX_PAT=''.join(gen_pattern_string())
+MAX_PAT = ''.join(gen_pattern_string())
 
 def pattern_create(n): 
     return MAX_PAT[:n]
@@ -233,36 +231,16 @@ def pattern_offset(offset):
     Will accept an int of the form 0x12345678 or a 
     string that looks like '12345678'
     '''
-    if(type(offset)==type(999)):
-        offset=hex(offset)[2:].zfill(8)
-    findMe=reduce(lambda a,b:b+a,chunk(offset,2)).decode('hex')
-    return MAX_PAT.index(findMe)
+    if type(offset) == int:
+        offset = '{0:x}'.format(offset) # basically convert integer to hex "%x"
+    item = reversed(list(chunk(offset,2)))
+    item = "".join(item).decode('hex')
+    return MAX_PAT.index(item)
 
-def brute(iterable, r=None):
-    ''' http://docs.python.org/2/library/itertools.html#itertools.permutations '''
-    # permutations('ABCD', 2) --> AB AC AD BA BC BD CA CB CD DA DB DC
-    # permutations(range(3)) --> 012 021 102 120 201 210
-    pool = tuple(iterable)
-    n = len(pool)
-    r = n if r is None else r
-    if r > n:
-        return
-    indices = range(n)
-    cycles = range(n, n-r, -1)
-    yield tuple(pool[i] for i in indices[:r])
-    while n:
-        for i in reversed(range(r)):
-            cycles[i] -= 1
-            if cycles[i] == 0:
-                indices[i:] = indices[i+1:] + indices[i:i+1]
-                cycles[i] = n - i
-            else:
-                j = cycles[i]
-                indices[i], indices[-j] = indices[-j], indices[i]
-                yield tuple(pool[i] for i in indices[:r])
-                break
-        else:
-            return
+def bruteforce(charset, maxlength):
+    return (''.join(candidate)
+        for candidate in itertools.chain.from_iterable(itertools.product(charset, repeat=i)
+        for i in range(1, maxlength + 1)))
 
 def telnet_shell(sock):
     '''pass to this function a socket object with a listening shell(socket reuse)'''
@@ -272,29 +250,31 @@ def telnet_shell(sock):
     return
 
 def recv_until(s, data):
-	'''receive data from s until string data is found s(socket, "string")'''
-	p = ""
-	while data not in p:
-		p += s.recv(0x1)
-	return p
+    '''receive data from s until string data is found s(socket, "string")'''
+    p = ""
+    while data not in p:
+        p += s.recv(0x1)
+    return p
 
 def hd(s,n,le=True):
     """print out a hex dump of the string s in n byte chunks little-endian by default"""
-    elems=chunk(s,n)
-    fmt_mapping={1:'B', 2:'H', 4:'I', 8:'Q'}
+    elems = chunk(s,n)
+    fmt_mapping = {1:'B', 2:'H', 4:'I', 8:'Q'}
     
-    fmt=('<' if le else '>') + fmt_mapping[n] 
+    fmt = ('<' if le else '>') + fmt_mapping[n] 
 
-    elems=map(lambda a:unpack(fmt,'\0'*(n-len(a))+a)[0],elems)
+    elems = map(lambda a:unpack(fmt,'\0'*(n-len(a))+a)[0],elems)
     
-    addr=0
+    addr = 0
 
     for line in chunk(elems,0x10/n):
         #addr, [elems..]
-        fmt_str='{:#08x}:' + (' {{:#0{pad}x}}'.format(pad=(n*2+2)))*len(line)
+        fmt_str = '{:#08x}:' + (' {{:#0{pad}x}}'.format(pad=(n*2+2)))*len(line)
         print fmt_str.format(addr,*line)
-        addr+=0x10
+        addr += 0x10
 
-
+if __name__ == '__main__':
+    import code
+    code.interact(local=locals())
 
 
