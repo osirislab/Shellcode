@@ -5,6 +5,8 @@ import sys
 import telnetlib
 import select
 import string
+
+from subprocess import check_output
 from struct import pack,unpack
 from string import ascii_lowercase as ALPHABET
 
