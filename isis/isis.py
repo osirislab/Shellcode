@@ -272,6 +272,15 @@ def hd(s,n,le=True):
         fmt_str = '{:#08x}:' + (' {{:#0{pad}x}}'.format(pad=(n*2+2)))*len(line)
         print fmt_str.format(addr,*line)
         addr += 0x10
+        
+def hold_debugger(program_name=None):
+    '''Holds the debugger until c is pressed; optional arg to print the pid of that process'''
+    if(program_name):
+        print program_name+" pid:"+str(map(int,check_output(["pidof",program_name]).split())[-1])
+
+    print "Attach Debugger..."
+    while(raw_input() != 'c'):
+        pass
 
 if __name__ == '__main__':
     import code
