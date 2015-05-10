@@ -25,17 +25,14 @@ main:
 	; r9  = 0
 
 	; mmap(0, 1M, PROT_READ|PROT_WRITE, MAP_PRIVATE, input_fd, 0)
-	;mov r8, rdx		; r8 = input
+	mov r8, rbx		; r8 = input
 
 	xor edi, edi		; rdi = 0
 
 	xor edx, edx
 	xor eax, eax
 	xor ecx, ecx
-	xor r8, r8
-
 	xor esi, esi
-	
 	bts esi, 22		; rsi = 4M
 	xor  r9, r9
 	mov dl, 0x3		; rdx = 0x3
