@@ -28,15 +28,12 @@ main:
 	mov r8, rbx		; r8 = input
 
 	xor edi, edi		; rdi = 0
-
-	xor edx, edx
 	xor eax, eax
-	xor ecx, ecx
 	xor esi, esi
 	bts esi, 22		; rsi = 4M
-	xor  r9, r9
-	mov dl, 0x3		; rdx = 0x3
-	mov cl, 0x2		; rdl = 0x2
+	xor  r9d, r9d
+	lea edx, [rdi+0x3]	; rdx = 0x3
+	lea ecx, [rdi+0x2]	; rdl = 0x2
 
 	mov al, __NR_mmap
 	syscall 		; call mmap
@@ -48,15 +45,12 @@ main:
 
 	; open(filename, O_CREAT|O_RDWR, 0700)
 	xor eax, eax
-	xor edi, edi
-	xor edx, edx
-	push rax,
+	push rax
 	push qword stackcookie  ; TODO verify this
 	push 0x706d742f		; stack = /tmp/filename\0
 	mov rdi, rsp		; rdi = stack
-	xor esi, esi	
-	mov sil, 0x42		; ril = O_CREAT|O_RDWR
-	mov dl, 0x7
+	lea esi, [rax+0x42]	; ril = O_CREAT|O_RDWR
+	lea edx, [rax+0x7]
 	shl edx, 0x6
 	mov al, __NR_open
 	syscall			; call open
