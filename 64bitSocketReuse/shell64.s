@@ -25,7 +25,7 @@ main:
 	mov dl, 4 ;read 4 bytes	
 	mov ebx, MAGIC	
 ourread:
-	dec rdi 	
+	dec edi 	
 %ifdef DEBUG
 	jnz ourread.next	
 	int 3; this breakpoint triggers if we DON'T find the magic number
