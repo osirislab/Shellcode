@@ -58,7 +58,7 @@ add_token: 	;; calculate the pointer to push
  	
 	lea rdi,[rbx + rsi]  	;rdi points to current token
 	mov [rsp+rdx*8], rdi 	;save the current token pointer building argv
-	inc edx			;increment index into argv
+	add edx, 1		;increment index into argv
 scan_loop:	
 	repne scasb
 	
@@ -66,7 +66,7 @@ scan_loop:
 	sub rsi,rcx
 	xor eax, eax
 	mov byte[rbx+rsi-1],al	;null terminate each token (strtok)
-	
+	mov al, 0x20 		; delimiter
 	test rcx,rcx
 	jnz short add_token
 	
